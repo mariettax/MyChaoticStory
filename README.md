@@ -1,12 +1,12 @@
-Life's Ledger: The Hectic Day Sim 🏠💼👶
-Navigate the beautiful chaos of modern life in London, ON.
+My Chaotic Life: The Hectic Day Sim 🏠💼👶
+Navigate the beautiful chaos of modern life.
 
-Life's Ledger is an engaging web-based simulation game that challenges players to balance the demands of work, family, and personal well-being in a dynamic, ever-changing environment. Experience the daily grind and unexpected curveballs of adult life, making strategic decisions that impact your character's energy, finances, stress, and happiness.
+My Chaotic Life is an engaging web-based simulation game that challenges players to balance the demands of work, family, and personal well-being in a dynamic, ever-changing environment. Experience the daily grind and unexpected curveballs of adult life, making strategic decisions that impact your character's energy, finances, stress, and happiness.
 
-(Initially conceived as "Life's Ledger's," the game's name was playfully rebranded to "My Chaotic Life" by my 9-year-old son, who also served as an enthusiastic QA Tester! His (and my kids') continuous late-night play sessions and feedback were instrumental in transforming the game from a bland, static concept into the interactive, emoji-rich visual experience it is today. We had a blast testing and making continuous improvements together!)
+(Initially conceived as "Life's Ledger's," the game's name was playfully rebranded to "My Chaotic Life" by my 9-year-old son, who also served as an enthusiastic QA Tester! His (and my other kids') continuous late-night play sessions and feedback were instrumental in transforming the game from a bland, static concept into the interactive, emoji-rich visual experience it is today. We had a blast testing and making continuous improvements together!)
 
-🎮 How to Play
-The goal of Life's Ledger is to balance your resources (Energy, Money, Stress, Kid Happiness/Subscribers, Mood, Social Life, and Pet Happiness) while completing daily tasks and reacting to unexpected events.
+🎮How to Play
+The goal of My Chaotic Life is to balance your resources (Energy, Money, Stress, Kid Happiness/Subscribers, Mood, Social Life, and Pet Happiness) while completing daily tasks and reacting to unexpected events.
 
 Key Mechanics:
 

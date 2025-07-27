@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Life's Ledger: The Hectic Day Sim</title>
+    <title>My Chaotic Story: The Hectic Day Sim</title>
     <style>
         /* ===========================================
             RESET & BASE STYLES
@@ -193,8 +193,7 @@
             font-size: 1.1em;
         }
 
-        .form-group input,
-        .form-group select {
+        .form-group input {
             width: 100%;
             padding: 14px 16px;
             border: 2px solid #e2e8f0;
@@ -204,11 +203,64 @@
             transition: border-color 0.3s ease;
         }
 
-        .form-group input:focus,
-        .form-group select:focus {
+        .form-group input:focus {
             outline: none;
             border-color: #667eea;
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        /* NEW: Character Selection Grid */
+        .character-selection-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* Two columns */
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .character-card {
+            background: #f7fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 120px; /* Ensure cards have some height */
+        }
+
+        .character-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .character-card.selected {
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.3);
+            background: linear-gradient(45deg, #e0e7ff, #c3dafe); /* Light blue gradient */
+        }
+
+        .character-card .emoji {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            line-height: 1;
+        }
+
+        .character-card .label {
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 1em;
+        }
+
+        /* NEW: Pet Selection Grid */
+        .pet-selection-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr; /* Three columns for no, dog, cat */
+            gap: 16px;
+            margin-bottom: 24px;
         }
 
         /* ===========================================
@@ -540,7 +592,19 @@
             text-align: center;
             box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
             animation: scaleIn 0.3s ease;
+            /* NEW: For scrollable content in modals */
+            max-height: 80vh; /* Limit height to 80% of viewport height */
+            display: flex; /* Use flexbox to push button to bottom */
+            flex-direction: column; /* Stack content vertically */
         }
+
+        /* NEW: Scrollable content area within modal */
+        .modal-scroll-content {
+            flex-grow: 1; /* Allows this area to take available space */
+            overflow-y: auto; /* Enable vertical scrolling */
+            padding-bottom: 20px; /* Space above the button */
+        }
+
 
         @keyframes scaleIn {
             from {
@@ -566,16 +630,19 @@
             color: #4a5568;
             line-height: 1.5;
             font-size: 1.1em;
+            white-space: pre-wrap; /* Preserve whitespace and line breaks for instructions */
+            text-align: left; /* Align text left for readability */
         }
 
         .modal-choices {
             display: flex;
             flex-direction: column;
             gap: 12px;
+            margin-top: auto; /* Pushes choices to the bottom of the flex container */
         }
 
         /* ===========================================
-            END OF DAY SUMMARY (Life's Ledger Daily Report)
+            END OF DAY SUMMARY (Now "My Chaotic Story Daily Report")
             =========================================== */
         .summary-grid {
             display: grid;
@@ -803,15 +870,15 @@
             50% { transform: rotate(5deg) scale(1.05); }
         }
 
-        .construction-anim {
-            background: linear-gradient(135deg, #cfd8dc 0%, #b0bec5 100%);
+        .nurse-anim { /* NEW: Nurse animation */
+            background: linear-gradient(135deg, #fce4ec 0%, #f8bbd0 100%); /* Light pink/purple */
         }
-        .construction-anim .animation-visual {
-            animation: constructionBuild 1.8s ease-in-out infinite;
+        .nurse-anim .animation-visual {
+            animation: nurseCare 1.8s ease-in-out infinite;
         }
-        @keyframes constructionBuild {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-8px) rotate(-5deg); }
+        @keyframes nurseCare {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-5px) rotate(3deg); }
         }
 
         /* NEW: Stress Breakdown Animation */
@@ -989,9 +1056,9 @@
               =============================================== -->
         <div id="start-screen" class="screen active">
             <div class="game-logo">🏠💼👶</div>
-            <h1 class="title">Life's Ledger</h1>
-            <p class="subtitle">The Hectic Day Sim<br><em>Navigate the beautiful chaos of modern life in London, ON</em></p>
-            <button class="btn" onclick="showScreen('character-creation-screen')">
+            <h1 class="title">My Chaotic Story</h1>
+            <p class="subtitle">The Hectic Day Sim<br><em>Navigate the beautiful chaos of modern life</em></p>
+            <button class="btn" onclick="showCharacterCreationScreen()">
                 🎮 Start New Game
             </button>
             <button class="btn secondary" onclick="showHowToPlay()">
@@ -1007,40 +1074,70 @@
             <p class="subtitle">Set up your character and family situation</p>
 
             <div class="form-group">
-                <label for="player-name">👤 Your Name:</label>
-                <input type="text" id="player-name" placeholder="Enter your name" maxlength="20">
+                <label for="player-name">👤 Name your character:</label>
+                <input type="text" id="player-name" placeholder="Name your character" maxlength="20">
             </div>
 
             <div class="form-group">
-                <label for="num-kids">👶 Number of Kids:</label>
-                <select id="num-kids">
-                    <option value="0">0 Kids (Single/No Kids)</option>
-                    <option value="1">1 Kid (Toddler)</option>
-                    <option value="2">2 Kids (Toddler + Baby)</option>
-                </select>
+                <label>💼 Choose Your Job:</label>
+                <div class="character-selection-grid" id="job-selection-grid">
+                    <div class="character-card" data-job="shop-assistant" onclick="selectJob('shop-assistant')">
+                        <span class="emoji">🏪</span>
+                        <span class="label">Shop Assistant</span>
+                    </div>
+                    <div class="character-card" data-job="international-student" onclick="selectJob('international-student')">
+                        <span class="emoji">🎓</span>
+                        <span class="label">International Student</span>
+                    </div>
+                    <div class="character-card" data-job="youtuber" onclick="selectJob('youtuber')">
+                        <span class="emoji">🎮</span>
+                        <span class="label">YouTuber Gamer</span>
+                    </div>
+                    <div class="character-card" data-job="nurse" onclick="selectJob('nurse')">
+                        <span class="emoji">🩺</span>
+                        <span class="label">Nurse</span>
+                    </div>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label for="job">💼 Starting Job:</label>
-                <select id="job" onchange="handleJobChange()">
-                    <option value="retail">Entry-Level Retail Associate</option>
-                    <option value="international-student">International Student (Western University)</option>
-                    <option value="youtuber">YouTuber (Roblox Gamer)</option>
-                    <option value="construction-worker">Construction Worker</option>
-                </select>
+            <div class="form-group" id="num-kids-group">
+                <label>👶 Number of Kids:</label>
+                <div class="character-selection-grid" id="kids-selection-grid">
+                    <div class="character-card" data-kids="0" onclick="selectKids(0)">
+                        <span class="emoji">🚫</span>
+                        <span class="label">0 Kids</span>
+                    </div>
+                    <div class="character-card" data-kids="1" onclick="selectKids(1)">
+                        <span class="emoji">👶</span>
+                        <span class="label">1 Kid</span>
+                    </div>
+                    <div class="character-card" data-kids="2" onclick="selectKids(2)">
+                        <span class="emoji">🍼👶</span>
+                        <span class="label">2 Kids</span>
+                    </div>
+                </div>
             </div>
 
             <!-- NEW: Pet Selection -->
             <div class="form-group">
-                <label for="pet-type">🐾 Pet Type:</label>
-                <select id="pet-type">
-                    <option value="none">No Pet</option>
-                    <option value="dog">Dog 🐶</option>
-                    <option value="cat">Cat 🐱</option>
-                </select>
+                <label>🐾 Pet Type:</label>
+                <div class="pet-selection-grid" id="pet-selection-grid">
+                    <div class="character-card" data-pet="none" onclick="selectPet('none')">
+                        <span class="emoji">🚫</span>
+                        <span class="label">No Pet</span>
+                    </div>
+                    <div class="character-card" data-pet="dog" onclick="selectPet('dog')">
+                        <span class="emoji">🐶</span>
+                        <span class="label">Dog</span>
+                    </div>
+                    <div class="character-card" data-pet="cat" onclick="selectPet('cat')">
+                        <span class="emoji">🐱</span>
+                        <span class="label">Cat</span>
+                    </div>
+                </div>
             </div>
 
-            <button class="btn" onclick="startGame()">
+            <button class="btn" onclick="startNewGame()">
                 ✨ Confirm & Start Day
             </button>
         </div>
@@ -1142,7 +1239,7 @@
         </div>
 
         <!-- ===============================================
-              END OF DAY SUMMARY (Now "Life's Ledger Daily Report")
+              END OF DAY SUMMARY (Now "My Chaotic Story Daily Report")
               =============================================== -->
         <div id="end-of-day-screen" class="screen">
             <h1 class="title">Day <span id="summary-day-number">1</span> Summary</h1>
@@ -1160,7 +1257,7 @@
             <button class="btn" onclick="nextDay()">
                 🌅 Next Day
             </button>
-            <button class="btn secondary" onclick="showScreen('start-screen')">
+            <button class="btn secondary" onclick="checkPlayabilityAndLoadGame()">
                 🏠 Main Menu
             </button>
         </div>
@@ -1170,8 +1267,10 @@
               =============================================== -->
         <div id="random-event-modal" class="modal">
             <div class="modal-content">
-                <h2 class="modal-title" id="event-title">Emergency Meeting!</h2>
-                <p class="modal-text" id="event-description">Something unexpected happened!</p>
+                <div class="modal-scroll-content"> <!-- NEW: Scrollable content wrapper -->
+                    <h2 class="modal-title" id="event-title">Emergency Meeting!</h2>
+                    <p class="modal-text" id="event-description">Something unexpected happened!</p>
+                </div>
                 <div class="modal-choices" id="event-choices">
                     <!-- Choices will be populated by JavaScript -->
                 </div>
@@ -1181,6 +1280,35 @@
         <!-- NEW: Inner Demon Notification -->
         <div id="demon-notification" class="demon-notification" style="display: none;"></div>
 
+        <!-- NEW: Playability Check Modal -->
+        <div id="playability-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-scroll-content"> <!-- NEW: Scrollable content wrapper -->
+                    <h2 class="modal-title" id="playability-title"></h2>
+                    <p class="modal-text" id="playability-message"></p>
+                </div>
+                <button class="btn" onclick="hideModal('playability-modal')">Okay</button>
+            </div>
+        </div>
+
+        <!-- NEW: Energy Depleted Modal -->
+        <div id="energy-depleted-modal" class="modal">
+            <div class="modal-content">
+                <h2 class="modal-title">🔋 Energy Depleted!</h2>
+                <p class="modal-text">You've run out of energy for the day. Time to rest!</p>
+                <button class="btn" onclick="hideModal('energy-depleted-modal'); endDay();">End Day</button>
+            </div>
+        </div>
+
+        <!-- NEW: Stress Depleted Modal (Added to fix the error) -->
+        <div id="stress-depleted-modal" class="modal">
+            <div class="modal-content">
+                <h2 class="modal-title">🤯 Burnout!</h2>
+                <p class="modal-text">Your stress levels are too high! You've reached burnout. Time to take a break!</p>
+                <button class="btn" onclick="hideModal('stress-depleted-modal'); endDay();">End Day</button>
+            </div>
+        </div>
+
     </div>
 
     <script>
@@ -1189,8 +1317,8 @@
         // ===============================================
         let gameState = {
             playerName: '',
-            numKids: 1,
-            job: 'retail',
+            numKids: 0, // Default to 0, selected via UI
+            job: '', // Selected via UI
             petType: 'none', // NEW: 'none', 'dog', 'cat'
             day: 1,
             time: 7, // 24-hour format (7 = 7:00 AM)
@@ -1212,8 +1340,21 @@
             internetDown: false, // NEW: Flag for internet outage
             // NEW: Flags for bus consequences
             nextDayShiftPenalty: false,
-            nextDayLectureConsequence: null // 'lockedOut' or 'humiliated'
+            nextDayLectureConsequence: null, // 'lockedOut' or 'humiliated'
+            isWorkingToday: false, // NEW: Flag to track if character is working/studying today
+            isOffDay: false // NEW: Flag to indicate if it's a designated off-day
         };
+
+        // NEW: Selected character properties for UI
+        let selectedJob = null;
+        let selectedKids = null;
+        let selectedPet = null;
+
+        const MIN_TASKS_PER_DAY = 12; // NEW: Minimum tasks per day
+        const COOLDOWN_HOURS = 0.05; // Cooldown period in hours (3 minutes for testing)
+        // const COOLDOWN_HOURS = 6; // Original 6 hours
+
+        let cooldownIntervalId = null; // To store the interval ID for cooldown clock
 
         // ===============================================
         // TASKS DATABASE - Grouped by Job Role
@@ -1227,7 +1368,7 @@
                 effects: {energy: -10, stress: +5, mood: 'Neutral'},
                 message: 'Morning routine complete! Ready for the day. 🌅',
                 animation: {emoji: '☕', class: 'morning-routine-anim', description: 'Waking up and getting ready...'},
-                appliesTo: ['retail', 'international-student', 'construction-worker'] // Does not apply to YouTuber
+                appliesTo: ['shop-assistant', 'international-student', 'nurse'] // Does not apply to YouTuber
             },
             {
                 id: 'pay-rent',
@@ -1238,7 +1379,7 @@
                 message: 'Rent paid! One less thing to worry about. 💸',
                 animation: {emoji: '🏡', class: 'chore-anim', description: 'Keeping a roof over your head.'},
                 deadlineDay: 5, // Example: Rent due on Day 5
-                appliesTo: ['retail', 'international-student', 'youtuber', 'construction-worker']
+                appliesTo: ['shop-assistant', 'international-student', 'youtuber', 'nurse']
             },
             {
                 id: 'pay-utilities', // NEW: Utilities bill
@@ -1249,7 +1390,7 @@
                 message: 'Utilities paid. Stay warm and lit! 💡',
                 animation: {emoji: '⚡', class: 'chore-anim', description: 'Keeping the lights on.'},
                 deadlineDay: 7,
-                appliesTo: ['retail', 'international-student', 'youtuber', 'construction-worker']
+                appliesTo: ['shop-assistant', 'international-student', 'youtuber', 'nurse']
             },
             {
                 id: 'pay-internet', // NEW: Internet bill
@@ -1260,7 +1401,7 @@
                 message: 'Internet bill paid. Stay connected! 🌐',
                 animation: {emoji: '📡', class: 'chore-anim', description: 'Keeping the Wi-Fi flowing.'},
                 deadlineDay: 3,
-                appliesTo: ['retail', 'international-student', 'youtuber', 'construction-worker']
+                appliesTo: ['shop-assistant', 'international-student', 'youtuber', 'nurse']
             },
             {
                 id: 'nap-rest',
@@ -1270,7 +1411,7 @@
                 effects: {energy: +25, stress: -15, mood: 'Happy'},
                 message: 'Short nap helped you recharge! 😴',
                 animation: {emoji: '💤', class: 'nap-anim', description: 'Shhh... recharging batteries.'},
-                appliesTo: ['retail', 'international-student', 'youtuber', 'construction-worker']
+                appliesTo: ['shop-assistant', 'international-student', 'youtuber', 'nurse']
             },
             {
                 id: 'house-chores',
@@ -1280,7 +1421,7 @@
                 effects: {energy: -20, stress: +5, mood: 'Neutral'},
                 message: 'House is clean! A tidy space helps. 🧹',
                 animation: {emoji: '🧼', class: 'chores-anim', description: 'Scrub-a-dub-dub, the house is clean!'},
-                appliesTo: ['retail', 'international-student', 'youtuber', 'construction-worker']
+                appliesTo: ['shop-assistant', 'international-student', 'youtuber', 'nurse']
             },
             {
                 id: 'call-friend',
@@ -1290,7 +1431,7 @@
                 effects: {energy: -5, stress: -10, socialLife: +20, mood: 'Happy'},
                 message: 'Good chat with a friend! Feeling more connected. ❤️',
                 animation: {emoji: '💬', class: 'social-media-anim', description: 'Connecting with loved ones.'},
-                appliesTo: ['retail', 'international-student', 'youtuber', 'construction-worker']
+                appliesTo: ['shop-assistant', 'international-student', 'youtuber', 'nurse']
             },
             {
                 id: 'buy-lottery-ticket',
@@ -1300,7 +1441,7 @@
                 effects: {money: -5, stress: +5}, // Initial stress/money cost
                 message: 'Lottery ticket bought. Fingers crossed! 🤞',
                 animation: {emoji: '🍀', class: 'chore-anim', description: 'Hoping for a win.'},
-                appliesTo: ['retail', 'international-student', 'youtuber', 'construction-worker']
+                appliesTo: ['shop-assistant', 'international-student', 'youtuber', 'nurse']
             },
             {
                 id: 'grocery-shopping',
@@ -1310,7 +1451,7 @@
                 effects: {energy: -25, money: -65, stress: +20, mood: 'Stressed'},
                 message: 'Groceries done! $65 spent - when did food get so expensive? 🛒',
                 animation: {emoji: '🛍️', class: 'grocery-anim', description: 'Navigating the aisles of inflation.'},
-                appliesTo: ['retail', 'international-student', 'youtuber', 'construction-worker'],
+                appliesTo: ['shop-assistant', 'international-student', 'youtuber', 'nurse'],
                 triggerTantrum: true // NEW: Flag to trigger tantrum event
             },
             // NEW: Offline Tasks for Internet Outage
@@ -1323,7 +1464,7 @@
                 message: 'Lost yourself in a book. A peaceful escape. 📚',
                 animation: {emoji: '📖', class: 'study-anim', description: 'Enjoying some quiet time.'},
                 requiresInternet: false,
-                appliesTo: ['retail', 'international-student', 'youtuber', 'construction-worker']
+                appliesTo: ['shop-assistant', 'international-student', 'youtuber', 'nurse']
             },
             {
                 id: 'tidy-corner',
@@ -1334,7 +1475,7 @@
                 message: 'One less mess to worry about! 🧼',
                 animation: {emoji: '✨', class: 'chores-anim', description: 'Making your space sparkle.'},
                 requiresInternet: false,
-                appliesTo: ['retail', 'international-student', 'youtuber', 'construction-worker']
+                appliesTo: ['shop-assistant', 'international-student', 'youtuber', 'nurse']
             },
             {
                 id: 'stare-at-wall',
@@ -1345,12 +1486,68 @@
                 message: 'You stared at the wall for a while. Not very productive. 😐',
                 animation: {emoji: '👁️', class: 'nap-anim', description: 'Deep thoughts... or no thoughts.'},
                 requiresInternet: false,
-                appliesTo: ['retail', 'international-student', 'youtuber', 'construction-worker']
+                appliesTo: ['shop-assistant', 'international-student', 'youtuber', 'nurse']
+            },
+            // NEW: User-suggested stress-reducing tasks
+            {
+                id: 'long-walk',
+                text: '🌳 Long Walk in the Park',
+                details: 'Enjoy nature, clear your head',
+                time: 2,
+                effects: {energy: -10, stress: -25, mood: 'Happy'},
+                message: 'A refreshing walk. The fresh air did wonders for your stress! 🍃',
+                animation: {emoji: '🚶‍♀️', class: 'self-care-task', description: 'Strolling through nature.'},
+                requiresInternet: false,
+                appliesTo: ['shop-assistant', 'international-student', 'youtuber', 'nurse']
+            },
+            {
+                id: 'journaling',
+                text: '✍️ Journaling / Reflect',
+                details: 'Write down your thoughts and feelings',
+                time: 1,
+                effects: {energy: -5, stress: -20, mood: 'Inspired'},
+                message: 'Putting thoughts on paper brought clarity and calm. 📖',
+                animation: {emoji: '📝', class: 'self-care-task', description: 'Expressing inner thoughts.'},
+                requiresInternet: false,
+                appliesTo: ['shop-assistant', 'international-student', 'youtuber', 'nurse']
+            },
+            {
+                id: 'yoga-session',
+                text: '🧘 Yoga Session',
+                details: 'Stretch and find your inner peace',
+                time: 1.5,
+                effects: {energy: -10, stress: -20, mood: 'Happy'},
+                message: 'Feeling centered and relaxed after yoga. Namaste. 🧘',
+                animation: {emoji: '🕉️', class: 'self-care-task', description: 'Finding balance and peace.'},
+                requiresInternet: false,
+                appliesTo: ['shop-assistant', 'international-student', 'youtuber', 'nurse']
+            },
+            {
+                id: 'creative-outlet',
+                text: '🎨 Creative Outlet (Painting/Drawing)',
+                details: 'Express yourself through art',
+                time: 2,
+                effects: {energy: -15, stress: -25, mood: 'Inspired'},
+                message: 'Lost track of time creating art. A wonderful escape! 🖌️',
+                animation: {emoji: '🖼️', class: 'self-care-task', description: 'Unleashing your inner artist.'},
+                requiresInternet: false,
+                appliesTo: ['shop-assistant', 'international-student', 'youtuber', 'nurse']
+            },
+            {
+                id: 'dance-party',
+                text: '💃 Dance Party (Solo)',
+                details: 'Put on some music and just dance!',
+                time: 1,
+                effects: {energy: -15, stress: -20, mood: 'Happy', socialLife: +5},
+                message: 'Danced like no one was watching! Feeling energized and free. 🎶',
+                animation: {emoji: '🕺', class: 'social-task', description: 'Grooving to your own beat.'},
+                requiresInternet: true,
+                appliesTo: ['shop-assistant', 'international-student', 'youtuber', 'nurse']
             }
         ];
 
         const jobSpecificTasks = {
-            'retail': [
+            'shop-assistant': [
                 {
                     id: 'daycare-dropoff',
                     text: '👶 Daycare Drop-off',
@@ -1359,7 +1556,7 @@
                     effects: {energy: -10, stress: +10, money: -15, kidHappiness: +5, mood: 'Neutral'},
                     message: 'Kids dropped off at daycare. Now, to catch that bus...',
                     animation: {emoji: '🚌', class: 'family-task', description: 'Rushing to drop off the little ones.'},
-                    appliesTo: ['retail', 'international-student', 'construction-worker'],
+                    appliesTo: ['shop-assistant', 'international-student', 'nurse'],
                     requiresKids: true,
                     triggerBusEvent: true // NEW: Flag to trigger the bus event
                 },
@@ -1371,7 +1568,7 @@
                     effects: {energy: -10, stress: +5, kidHappiness: +10, mood: 'Happy'},
                     message: 'Kids picked up! They\'re tired but happy to see you.',
                     animation: {emoji: '👨‍👩‍👧‍👦', class: 'family-task', description: 'Reuniting with the family.'},
-                    appliesTo: ['retail', 'international-student', 'construction-worker'],
+                    appliesTo: ['shop-assistant', 'international-student', 'nurse'],
                     requiresKids: true
                 },
                 {
@@ -1385,23 +1582,25 @@
                 },
                 {
                     id: 'work-shift',
-                    text: '💼 Work Shift (Retail)',
-                    details: 'Full 8-hour shift at retail store',
+                    text: '💼 Work Shift (Shop Assistant)',
+                    details: 'Full 8-hour shift at the shop',
                     time: 8,
                     effects: {energy: -40, money: +96, stress: +25, mood: 'Stressed'},
                     message: 'Long day at work earned you $96, but you\'re exhausted! 💼',
                     animation: {emoji: '💻', class: 'work-anim', description: 'Typing, selling, smiling...'},
-                    requiresInternet: false // Assuming retail work can be done offline
+                    requiresInternet: false, // Assuming shop assistant work can be done offline
+                    isWorkTask: true // NEW: Flag for work-related task
                 },
                 {
                     id: 'part-time-work',
-                    text: '👔 Part-Time Work (Retail)',
+                    text: '👔 Part-Time Work (Shop Assistant)',
                     details: 'Shorter 4-hour shift for family balance',
                     time: 4,
                     effects: {energy: -20, money: +48, stress: +15, mood: 'Neutral'},
                     message: 'Half day at work - $48 earned, more time for family! 👔',
                     animation: {emoji: '🛒', class: 'work-anim', description: 'Quick shift, still productive!'},
-                    requiresInternet: false
+                    requiresInternet: false,
+                    isWorkTask: true // NEW: Flag for work-related task
                 },
                 {
                     id: 'study-skill',
@@ -1443,7 +1642,7 @@
                     effects: {energy: -10, stress: +10, money: -15, kidHappiness: +5, mood: 'Neutral'},
                     message: 'Kids dropped off at daycare. Now, to catch that bus...',
                     animation: {emoji: '🚌', class: 'family-task', description: 'Rushing to drop off the little ones.'},
-                    appliesTo: ['retail', 'international-student', 'construction-worker'],
+                    appliesTo: ['shop-assistant', 'international-student', 'nurse'],
                     requiresKids: true,
                     triggerBusEvent: true // NEW: Flag to trigger the bus event
                 },
@@ -1455,7 +1654,7 @@
                     effects: {energy: -10, stress: +5, kidHappiness: +10, mood: 'Happy'},
                     message: 'Kids picked up! They\'re tired but happy to see you.',
                     animation: {emoji: '👨‍👩‍👧‍👦', class: 'family-task', description: 'Reuniting with the family.'},
-                    appliesTo: ['retail', 'international-student', 'construction-worker'],
+                    appliesTo: ['shop-assistant', 'international-student', 'nurse'],
                     requiresKids: true
                 },
                 {
@@ -1466,7 +1665,8 @@
                     effects: {energy: -15, stress: +10, growth: +5, mood: 'Neutral'},
                     message: 'Another lecture down. Brain is full! 📚',
                     animation: {emoji: '🧑‍🎓', class: 'international-student-anim', description: 'Absorbing knowledge at Western...'},
-                    requiresInternet: true // Online lectures/resources
+                    requiresInternet: true, // Online lectures/resources
+                    isWorkTask: true // NEW: Flag for work-related task (study is work for student)
                 },
                 {
                     id: 'study-for-class',
@@ -1476,7 +1676,8 @@
                     effects: {energy: -10, stress: +5, growth: +10, mood: 'Inspired'},
                     message: 'Deep dive into textbooks. Brain power activated! 🧠',
                     animation: {emoji: '📖', class: 'study-anim', description: 'Focused on academics...'},
-                    requiresInternet: true // Online resources/submissions
+                    requiresInternet: true, // Online resources/submissions
+                    isWorkTask: true // NEW: Flag for work-related task
                 },
                 {
                     id: 'send-job-applications',
@@ -1546,7 +1747,8 @@
                     effects: {energy: -20, money: +35, stress: +10, mood: 'Stressed'},
                     message: 'Earned some cash! Every dollar counts. 💸',
                     animation: {emoji: '🏪', class: 'work-anim', description: 'Balancing studies with work.'},
-                    requiresInternet: false
+                    requiresInternet: false,
+                    isWorkTask: true // NEW: Flag for work-related task
                 },
                 {
                     id: 'no-work-day',
@@ -1566,7 +1768,8 @@
                     effects: {energy: -30, money: +50, stress: +25, mood: 'Overwhelmed'}, // High stress, good money
                     message: 'Unexpected shift! Good money, but threw off your plans.🤯',
                     animation: {emoji: '🏃‍♀️', class: 'work-anim', description: 'Rushing to a last-minute shift.'},
-                    requiresInternet: false
+                    requiresInternet: false,
+                    isWorkTask: true // NEW: Flag for work-related task
                 },
                 {
                     id: 'social-event-student',
@@ -1588,7 +1791,8 @@
                     effects: {energy: -15, stress: +5, mood: 'Inspired'},
                     message: 'Got some great clips! Roblox adventures are the best. 🎮',
                     animation: {emoji: '🕹️', class: 'youtuber-anim', description: 'Deep into the Robloxverse...'},
-                    requiresInternet: true
+                    requiresInternet: true,
+                    isWorkTask: true // NEW: Flag for work-related task
                 },
                 {
                     id: 'edit-roblox-video',
@@ -1598,7 +1802,8 @@
                     effects: {energy: -20, stress: +15, mood: 'Neutral'},
                     message: 'Hours of editing paid off. Video is looking sharp! ✂️',
                     animation: {emoji: '🎞️', class: 'youtuber-anim', description: 'Crafting the perfect video.'},
-                    requiresInternet: true
+                    requiresInternet: true,
+                    isWorkTask: true // NEW: Flag for work-related task
                 },
                 {
                     id: 'upload-roblox-video',
@@ -1608,7 +1813,8 @@
                     effects: {energy: -10, stress: +10, subscribers: +25, mood: 'Happy'}, // Base subscriber gain
                     message: 'Video live! Hope the Roblox community loves it! 🚀',
                     animation: {emoji: '⬆️', class: 'youtuber-anim', description: 'Sharing your masterpiece!'},
-                    requiresInternet: true
+                    requiresInternet: true,
+                    isWorkTask: true // NEW: Flag for work-related task
                 },
                 {
                     id: 'engage-comments-roblox',
@@ -1628,7 +1834,8 @@
                     effects: {energy: -25, stress: +20, subscribers: +35, money: +15, mood: 'Stressed'}, // Potential superchat money
                     message: 'Live stream was a blast! Viewers loved it.🔴',
                     animation: {emoji: '🎙️', class: 'youtuber-anim', description: 'Broadcasting live to your fans!'},
-                    requiresInternet: true
+                    requiresInternet: true,
+                    isWorkTask: true // NEW: Flag for work-related task
                 },
                 {
                     id: 'research-roblox-trends',
@@ -1648,7 +1855,8 @@
                     effects: {energy: -20, stress: +10, subscribers: +50, socialLife: +20, mood: 'Happy'},
                     message: 'Awesome collab! New viewers are finding your channel. 🤝',
                     animation: {emoji: '👯', class: 'youtuber-anim', description: 'Teaming up for epic content!'},
-                    requiresInternet: true
+                    requiresInternet: true,
+                    isWorkTask: true // NEW: Flag for work-related task
                 },
                 {
                     id: 'deal-with-haters',
@@ -1668,7 +1876,8 @@
                     effects: {money: +80, stress: -5, mood: 'Happy'},
                     message: 'Ad revenue check! A nice boost to the bank account. 💵',
                     animation: {emoji: '💲', class: 'work-anim', description: 'Turning views into dollars.'},
-                    requiresInternet: true
+                    requiresInternet: true,
+                    isWorkTask: true // NEW: Flag for work-related task
                 },
                 {
                     id: 'plan-content-calendar',
@@ -1691,7 +1900,7 @@
                     requiresInternet: true
                 }
             ],
-            'construction-worker': [
+            'nurse': [
                 {
                     id: 'daycare-dropoff',
                     text: '👶 Daycare Drop-off',
@@ -1700,7 +1909,7 @@
                     effects: {energy: -10, stress: +10, money: -15, kidHappiness: +5, mood: 'Neutral'},
                     message: 'Kids dropped off at daycare. Now, to catch that bus...',
                     animation: {emoji: '🚌', class: 'family-task', description: 'Rushing to drop off the little ones.'},
-                    appliesTo: ['retail', 'international-student', 'construction-worker'],
+                    appliesTo: ['shop-assistant', 'international-student', 'nurse'],
                     requiresKids: true,
                     triggerBusEvent: true // NEW: Flag to trigger the bus event
                 },
@@ -1712,77 +1921,83 @@
                     effects: {energy: -10, stress: +5, kidHappiness: +10, mood: 'Happy'},
                     message: 'Kids picked up! They\'re tired but happy to see you.',
                     animation: {emoji: '👨‍👩‍👧‍👦', class: 'family-task', description: 'Reuniting with the family.'},
-                    appliesTo: ['retail', 'international-student', 'construction-worker'],
+                    appliesTo: ['shop-assistant', 'international-student', 'nurse'],
                     requiresKids: true
                 },
                 {
-                    id: 'morning-site-prep',
-                    text: '🏗️ Morning Site Prep',
-                    details: 'Prepare the construction site for the day',
-                    time: 2,
-                    effects: {energy: -15, stress: +5, mood: 'Neutral'},
-                    message: 'Site prep done. Another day, another build. 🏗️',
-                    animation: {emoji: '👷', class: 'construction-anim', description: 'Getting ready for heavy work.'},
-                    requiresInternet: false
+                    id: 'morning-huddle',
+                    text: '🩺 Morning Huddle',
+                    details: 'Briefing with the medical team before your shift',
+                    time: 0.5,
+                    effects: {energy: -5, stress: +5, mood: 'Neutral'},
+                    message: 'Morning huddle complete. Ready for the ward. 🩺',
+                    animation: {emoji: '📋', class: 'nurse-anim', description: 'Getting vital updates.'},
+                    requiresInternet: false,
+                    isWorkTask: true // NEW: Flag for work-related task
                 },
                 {
-                    id: 'heavy-lifting-shift',
-                    text: '🏋️ Heavy Lifting Shift',
-                    details: 'Demanding physical labor on site',
-                    time: 6,
-                    effects: {energy: -40, money: +120, stress: +20, mood: 'Stressed'},
-                    message: 'Hard work pays off! $120 earned, but you\'re sore. 🏋️',
-                    animation: {emoji: '💪', class: 'construction-anim', description: 'Lifting, hauling, building...'},
-                    requiresInternet: false
-                },
-                {
-                    id: 'tool-maintenance',
-                    text: '🛠️ Tool Maintenance',
-                    details: 'Clean and repair equipment',
-                    time: 1,
-                    effects: {energy: -5, stress: -5, mood: 'Neutral'},
-                    message: 'Tools sharpened, ready for action. Safety first! 🛠️',
-                    animation: {emoji: '🔧', class: 'construction-anim', description: 'Keeping the gear in top shape.'},
-                    requiresInternet: false
-                },
-                {
-                    id: 'safety-briefing',
-                    text: '👷 Safety Briefing',
-                    details: 'Mandatory daily safety meeting',
-                    time: 1,
-                    effects: {energy: -0, stress: +0, mood: 'Bored'},
-                    message: 'Another safety briefing. Important, but long. 👷',
-                    animation: {emoji: '📋', class: 'construction-anim', description: 'Listening to the rules...'},
-                    requiresInternet: false
-                },
-                {
-                    id: 'overtime-shift',
-                    text: '🌙 Overtime Shift',
-                    details: 'Work extra hours for more pay',
+                    id: 'patient-rounds',
+                    text: '🧑‍⚕️ Patient Rounds',
+                    details: 'Check on patients, administer meds, update charts',
                     time: 4,
-                    effects: {energy: -50, money: +180, stress: +30, mood: 'Overwhelmed'},
-                    message: 'Extra hours, extra cash! But you\'re exhausted. 🌙',
-                    animation: {emoji: '🌃', class: 'construction-anim', description: 'Pushing through for that extra pay.'},
-                    requiresInternet: false
+                    effects: {energy: -30, stress: +20, money: +75, mood: 'Stressed'},
+                    message: 'Busy rounds! Patients cared for, but you\'re feeling the pressure. 🧑‍⚕️',
+                    animation: {emoji: '🏥', class: 'nurse-anim', description: 'Providing essential care.'},
+                    requiresInternet: false,
+                    isWorkTask: true // NEW: Flag for work-related task
                 },
                 {
-                    id: 'material-pickup',
-                    text: '🚚 Material Pickup',
-                    details: 'Drive to pick up supplies for the site',
+                    id: 'emergency-response',
+                    text: '🚨 Emergency Response',
+                    details: 'Handle an unexpected patient emergency',
                     time: 2,
-                    effects: {energy: -10, stress: +10, money: -50, mood: 'Neutral'},
-                    message: 'Materials secured. Another supply run complete. 🚚',
-                    animation: {emoji: '🧱', class: 'construction-anim', description: 'Hauling heavy loads.'},
-                    requiresInternet: false
+                    effects: {energy: -40, stress: +40, mood: 'Overwhelmed'},
+                    message: 'Crisis averted! But that was intense. 🚨',
+                    animation: {emoji: '🚑', class: 'nurse-anim', description: 'Responding to a critical situation.'},
+                    requiresInternet: false,
+                    isWorkTask: true // NEW: Flag for work-related task
                 },
                 {
-                    id: 'team-lunch',
-                    text: '🍔 Team Lunch',
-                    details: 'Grab lunch with your crew',
+                    id: 'charting-documentation',
+                    text: '📝 Charting & Documentation',
+                    details: 'Update patient records meticulously',
+                    time: 3,
+                    effects: {energy: -15, stress: +10, mood: 'Bored'},
+                    message: 'Paperwork done. Essential, but tedious. 📝',
+                    animation: {emoji: '✍️', class: 'nurse-anim', description: 'Detailed record keeping.'},
+                    requiresInternet: true, // Often electronic health records
+                    isWorkTask: true // NEW: Flag for work-related task
+                },
+                {
+                    id: 'team-collaboration',
+                    text: '🤝 Team Collaboration',
+                    details: 'Consult with doctors and other nurses',
                     time: 1,
-                    effects: {energy: +10, stress: -10, socialLife: +15, mood: 'Happy'},
-                    message: 'Good food and good company. Morale boost! 🍔',
-                    animation: {emoji: '🤝', class: 'social-media-anim', description: 'Bonding with the team.'},
+                    effects: {energy: -5, stress: -10, socialLife: +15, mood: 'Happy'},
+                    message: 'Good teamwork makes the dream work. Feeling supported. 🤝',
+                    animation: {emoji: '💬', class: 'nurse-anim', description: 'Working together for patient care.'},
+                    requiresInternet: false,
+                    isWorkTask: true // NEW: Flag for work-related task
+                },
+                {
+                    id: 'patient-education',
+                    text: '🗣️ Patient Education',
+                    details: 'Explain treatment plans and care instructions',
+                    time: 1.5,
+                    effects: {energy: -10, stress: +5, mood: 'Inspired'},
+                    message: 'Helped a patient understand their condition better. Rewarding. 🗣️',
+                    animation: {emoji: '💡', class: 'nurse-anim', description: 'Empowering patients with knowledge.'},
+                    requiresInternet: false,
+                    isWorkTask: true // NEW: Flag for work-related task
+                },
+                {
+                    id: 'lunch-break',
+                    text: '🥪 Lunch Break (If you get one!)',
+                    details: 'Quick meal to refuel',
+                    time: 0.5,
+                    effects: {energy: +15, stress: -5, mood: 'Neutral'},
+                    message: 'A much-needed break. Food tastes better when you\'re starving. 🥪',
+                    animation: {emoji: '🍽️', class: 'nap-anim', description: 'A moment of peace.'},
                     requiresInternet: false
                 }
             ]
@@ -1799,6 +2014,7 @@
                 message: 'Your pet is happily munching away! 🐾',
                 animation: {emoji: '🍖', class: 'pet-care-anim', description: 'Keeping your pet well-fed.'},
                 requiresPet: true,
+                appliesTo: ['shop-assistant', 'international-student', 'youtuber', 'nurse'],
                 requiresInternet: false
             },
             {
@@ -1810,6 +2026,7 @@
                 message: 'A great play session! Your pet loves you. ❤️',
                 animation: {emoji: '🐕', class: 'pet-care-anim', description: 'Fun with your furry friend.'},
                 requiresPet: true,
+                appliesTo: ['shop-assistant', 'international-student', 'youtuber', 'nurse'],
                 requiresInternet: false
             },
             {
@@ -1821,6 +2038,7 @@
                 message: 'Pet grooming done. They look (and smell) much better! 🧼',
                 animation: {emoji: '✂️', class: 'pet-care-anim', description: 'Keeping your pet tidy.'},
                 requiresPet: true,
+                appliesTo: ['shop-assistant', 'international-student', 'youtuber', 'nurse'],
                 requiresInternet: false
             }
         ];
@@ -1857,7 +2075,7 @@
                 effects: {stress: -10, mood: 'Happy'},
                 message: 'Music always makes things better. 🎶',
                 animation: {emoji: '🎵', class: 'social-media-anim', description: 'Grooving to the beat.'},
-                requiresInternet: true // Assuming streaming music
+                requiresInternet: true
             },
             {
                 id: 'check-news-headlines',
@@ -1878,29 +2096,111 @@
                 message: 'That was hilarious! A much-needed laugh. 😂',
                 animation: {emoji: '📺', class: 'social-media-anim', description: 'Taking a mental break.'},
                 requiresInternet: true
+            },
+            {
+                id: 'meditate',
+                text: '🧘 Meditate for 15 mins',
+                details: 'Clear your mind and reduce stress',
+                time: 0.25,
+                effects: {energy: +5, stress: -15, mood: 'Happy'},
+                message: 'A short meditation helped calm your mind. 🧘',
+                animation: {emoji: 'OM', class: 'self-care-task', description: 'Finding inner peace.'},
+                requiresInternet: false
+            },
+            {
+                id: 'quick-snack',
+                text: '🍎 Quick Snack',
+                details: 'Boost your energy with a healthy bite',
+                time: 0.25,
+                effects: {energy: +10, money: -2, mood: 'Neutral'},
+                message: 'A healthy snack gave you a little boost. 🍎',
+                animation: {emoji: '🥪', class: 'morning-routine-anim', description: 'Fueling up quickly.'},
+                requiresInternet: false
             }
         ];
+
+        // NEW: Generic tasks to fill up the task list if job/pet tasks are not enough
+        const genericFillerTasks = [
+            {
+                id: 'quick-walk',
+                text: '🚶 Quick Walk Outside',
+                details: 'Get some fresh air and clear your head',
+                time: 1,
+                effects: {energy: -5, stress: -10, mood: 'Happy'},
+                message: 'A brisk walk helped you feel refreshed. 🌳',
+                animation: {emoji: '🚶', class: 'self-care-task', description: 'Enjoying the outdoors.'},
+                requiresInternet: false,
+                appliesTo: ['shop-assistant', 'international-student', 'youtuber', 'nurse']
+            },
+            {
+                id: 'organize-space',
+                text: '🗄️ Organize Small Space',
+                details: 'Tidy up a drawer or desk',
+                time: 0.5,
+                effects: {energy: -5, stress: -5, mood: 'Neutral'},
+                message: 'Your space feels a bit more organized. ✨',
+                animation: {emoji: '🗂️', class: 'chore-task', description: 'Bringing order to chaos.'},
+                requiresInternet: false,
+                appliesTo: ['shop-assistant', 'international-student', 'youtuber', 'nurse']
+            },
+            {
+                id: 'plan-day',
+                text: '🗓️ Plan Tomorrow',
+                details: 'Map out your tasks for the next day',
+                time: 0.5,
+                effects: {energy: -5, stress: -5, mood: 'Inspired'},
+                message: 'Tomorrow\'s plan is set. Feeling prepared! 📝',
+                animation: {emoji: '📅', class: 'study-anim', description: 'Strategizing for success.'},
+                requiresInternet: false,
+                appliesTo: ['shop-assistant', 'international-student', 'youtuber', 'nurse']
+            },
+            {
+                id: 'stretch-break',
+                text: '🤸 Stretch Break',
+                details: 'Light stretching to ease tension',
+                time: 0.25,
+                effects: {energy: +5, stress: -5, mood: 'Neutral'},
+                message: 'A quick stretch helped loosen up. 🧘',
+                animation: {emoji: '🙆', class: 'self-care-task', description: 'Releasing tension.'},
+                requiresInternet: false,
+                appliesTo: ['shop-assistant', 'international-student', 'youtuber', 'nurse']
+            }
+        ];
+
+        // NEW: Specific "Off Day" Task
+        const offDayTask = {
+            id: 'day-off',
+            text: '🏖️ Enjoy Your Day Off!',
+            details: 'No work today! Focus on yourself or family.',
+            time: 0, // No time cost, just a placeholder
+            effects: {energy: +10, stress: -10, mood: 'Happy'},
+            message: 'What a relief! A well-deserved day off. 😌',
+            animation: {emoji: '☀️', class: 'nap-anim', description: 'Relaxing and recharging.'},
+            isWorkTask: false,
+            requiresInternet: false,
+            appliesTo: ['shop-assistant', 'international-student', 'nurse']
+        };
 
 
         // NEW: Daily Dilemmas Database - with job and kid filters
         const dailyDilemmas = [
-            { text: "The Toddler Tantrum & Work Deadline Disaster! Can you keep it together?", hasKids: true, job: ['retail', 'international-student', 'construction-worker'] },
-            { text: "Inflation Strikes! Can You Still Afford Groceries AND Daycare in London, ON?", hasKids: true, job: ['retail', 'international-student', 'construction-worker'] },
-            { text: "Social Media Distraction Overload! Friends posting lavish vacations...", hasKids: false, job: ['retail', 'international-student', 'construction-worker'] }, // YouTuber has specific social media dilemma
-            { text: "Unexpected Bill & A Kid's School Project Due! (London, ON edition)", hasKids: true, job: ['retail', 'international-student', 'construction-worker'] },
-            { text: "London's job market is tight! Can you find enough work hours?", hasKids: false, job: ['international-student', 'retail'] },
-            { text: "Western University midterms are looming! Can you balance studies and life?", job: ['international-student'] },
-            { text: "Your latest Roblox video isn't gaining traction. How do you boost views?", job: ['youtuber'] },
-            { text: "Heavy rain predicted! Will your construction site be safe?", job: ['construction-worker'] },
-            { text: "A major Roblox update just dropped! Time to adapt your content?", job: ['youtuber'] },
-            { text: "Your tools are breaking down on site. Can you afford new ones?", job: ['construction-worker'] },
+            { text: "The Toddler Tantrum & Work Deadline Disaster! Can you keep it together?", hasKids: true, job: ['shop-assistant', 'international-student', 'nurse'], requiresWork: true },
+            { text: "Inflation Strikes! Can You Still Afford Groceries AND Daycare in London, ON?", hasKids: true, job: ['shop-assistant', 'international-student', 'nurse'] },
+            { text: "Social Media Distraction Overload! Friends posting lavish vacations...", hasKids: false, job: ['shop-assistant', 'international-student', 'nurse'] }, // YouTuber has specific social media dilemma
+            { text: "Unexpected Bill & A Kid's School Project Due! (London, ON edition)", hasKids: true, job: ['shop-assistant', 'international-student', 'nurse'] },
+            { text: "London's job market is tight! Can you find enough work hours?", job: ['international-student', 'shop-assistant'], requiresWork: true },
+            { text: "Western University midterms are looming! Can you balance studies and life?", job: ['international-student'], requiresWork: true },
+            { text: "Your latest Roblox video isn't gaining traction. How do you boost views?", job: ['youtuber'], requiresWork: true },
+            { text: "A critical patient needs your immediate attention! High stakes, high pressure.", job: ['nurse'], requiresWork: true },
+            { text: "A major Roblox update just dropped! Time to adapt your content?", job: ['youtuber'], requiresWork: true },
+            { text: "You're feeling emotionally drained after a tough shift. How do you cope?", job: ['nurse'], requiresWork: true },
             { text: "You feel homesick in London, ON. How do you cope?", job: ['international-student'] },
-            { text: "Your retail store is understaffed. Expect a busy day!", job: ['retail'] },
-            { text: "London's transit is delayed! Your commute is longer than usual.", job: ['international-student', 'retail', 'construction-worker'], hasKids: false }, // General London issue
-            { text: "Roblox game servers are down! Your content plans are ruined!", job: ['youtuber'] },
-            { text: "A new immigration policy update from IRCC. Is it good or bad news?", job: ['international-student'] },
-            { text: "Leaky Faucet! Your sink is dripping constantly, driving up your water bill.", hasKids: false, job: ['retail', 'international-student', 'youtuber', 'construction-worker'] },
-            { text: "Internet Outage! Your Wi-Fi is down, affecting work/study/entertainment.", hasKids: false, job: ['retail', 'international-student', 'youtuber', 'construction-worker'] }
+            { text: "Your shop is understaffed. Expect a busy day!", job: ['shop-assistant'], requiresWork: true },
+            { text: "London's transit is delayed! Your commute is longer than usual.", job: ['international-student', 'shop-assistant', 'nurse'], hasKids: false, requiresWork: true }, // General London issue
+            { text: "Roblox game servers are down! Your content plans are ruined!", job: ['youtuber'], requiresWork: true },
+            { text: "A new immigration policy update from IRCC. Is it good or bad news?", job: ['international-student'], requiresWork: true },
+            { text: "Leaky Faucet! Your sink is dripping constantly, driving up your water bill.", hasKids: false, job: ['shop-assistant', 'international-student', 'youtuber', 'nurse'] },
+            { text: "Internet Outage! Your Wi-Fi is down, affecting work/study/entertainment.", hasKids: false, job: ['shop-assistant', 'international-student', 'youtuber', 'nurse'] }
         ];
 
         // ===============================================
@@ -1927,13 +2227,14 @@
                         effects: {stress: +35, mood: 'Stressed'},
                         message: 'You\'ll deal with it later, but it\'s weighing on your mind...'
                     }
-                ]
+                ],
+                requiresWork: false // This event can happen regardless of work status
             },
             {
                 title: 'Emergency Meeting! 📱✨ Social Media Envy!',
                 description: 'Your friend posted vacation photos from Hawaii. Meanwhile, you\'re budgeting for groceries...',
-                hasKids: false, // Only for those without kids (retail, int student, construction)
-                job: ['retail', 'international-student', 'construction-worker'],
+                hasKids: false, // Only for those without kids (shop-assistant, int student, nurse)
+                job: ['shop-assistant', 'international-student', 'nurse'],
                 choices: [
                     {
                         text: '😔 Feel Inadequate',
@@ -1950,7 +2251,8 @@
                         effects: {stress: +5, mood: 'Happy', socialLife: +5},
                         message: 'You genuinely celebrated their joy. Kindness always wins.'
                     }
-                ]
+                ],
+                requiresWork: false // Can happen on off days
             },
             {
                 title: 'Emergency Meeting! 👶🚨 Childcare Crisis!',
@@ -1982,7 +2284,8 @@
                         effects: {energy: -30, stress: +40, kidHappiness: -10, mood: 'Stressed'},
                         message: 'Desperate times... Your boss/professor was NOT happy, and your kids are restless.'
                     }
-                ]
+                ],
+                requiresWork: true // This event implies you *need* to work/attend class
             },
             // Job-specific events
             {
@@ -1992,7 +2295,8 @@
                 choices: [
                     { text: '☕ Pull an All-Nighter', effects: {energy: -30, stress: +20, growth: +15, mood: 'Stressed'}, message: 'You crammed all night. Hope it pays off!' },
                     { text: '😴 Get Some Sleep', effects: {energy: +20, stress: -10, growth: -5, mood: 'Neutral'}, message: 'Prioritized sleep. You\'ll do your best.' }
-                ]
+                ],
+                requiresWork: true // Exams are part of the "work" of a student
             },
             {
                 title: 'Emergency Meeting! 📈 Roblox Video Goes Viral?',
@@ -2001,16 +2305,18 @@
                 choices: [
                     { text: '🚀 Capitalize Now!', effects: {energy: -10, stress: +10, subscribers: +50, money: +20, mood: 'Inspired'}, message: 'You rode the wave! More subs and some cash!' },
                     { text: '🧘‍♀️ Stick to Schedule', effects: {stress: -5, subscribers: +10, mood: 'Neutral'}, message: 'You stuck to your plan. Steady growth is good.' }
-                ]
+                ],
+                requiresWork: true // This is directly related to YouTube work
             },
             {
-                title: 'Emergency Meeting! 🚧 Site Accident!',
-                description: 'A minor accident happened on the construction site. No one is seriously hurt, but work is halted.',
-                job: 'construction-worker',
+                title: 'Emergency Meeting! 🚨 Patient Deterioration!',
+                description: 'A patient\'s condition is worsening rapidly. You need to act fast and make critical decisions.',
+                job: 'nurse',
                 choices: [
-                    { text: '👷 Report Immediately', effects: {stress: +15, money: -50, mood: 'Stressed'}, message: 'You reported it. Safety first, but it cost time and money.' },
-                    { text: '🤫 Cover It Up', effects: {stress: +30, money: +0, mood: 'Overwhelmed'}, message: 'You decided to keep it quiet. Risky move, but work continues.' }
-                ]
+                    { text: '📞 Call for Backup', effects: {energy: -20, stress: +30, mood: 'Overwhelmed'}, message: 'You called for help. The situation is under control, but it was a close call.' },
+                    { text: '💪 Handle it Alone', effects: {energy: -50, stress: +50, mood: 'Stressed'}, message: 'You managed it, but the immense pressure took a toll. This is why nurses burn out.' }
+                ],
+                requiresWork: true // This is a work-specific event for nurses
             },
             {
                 title: 'Emergency Meeting! 📧 Job Rejection!',
@@ -2027,16 +2333,19 @@
                         effects: {stress: +15, energy: -5, mood: 'Neutral'},
                         message: 'A setback, but you\'re resilient. Onward to the next application!'
                     }
-                ]
+                ],
+                requiresWork: false // Can happen anytime, but tied to job hunting
             },
             {
                 title: 'Emergency Meeting! 🎲 Lottery Win?!',
                 description: 'You bought a lottery ticket... and it\'s a winner! How much?',
                 choices: [
-                    { text: '💰 Small Win ($50)', effects: {money: +50, stress: -5, mood: 'Happy'}, message: 'A small win! Every bit helps. 🎉' },
-                    { text: '🤑 Big Win ($500)', effects: {money: +500, stress: -10, mood: 'Happy'}, message: 'Wow! A significant win! Time to pay some bills! 🥳' },
+                    { text: '💰 Small Win ($10)', effects: {money: +10, stress: -2, mood: 'Happy'}, message: 'A small win! Every bit helps. 🎉' },
+                    { text: '🤑 Medium Win ($50)', effects: {money: +50, stress: -5, mood: 'Happy'}, message: 'A decent win! Nice surprise! 🥳' },
+                    { text: '💸 Big Win ($200)', effects: {money: +200, stress: -10, mood: 'Happy'}, message: 'Wow! A significant win! Time to pay some bills! 🤑' },
                     { text: '🤷‍♀️ No Win', effects: {stress: +5, mood: 'Bored'}, message: 'No luck this time. Back to reality. 😔' }
-                ]
+                ],
+                requiresWork: false // Can happen anytime
             },
             {
                 title: 'Emergency Meeting! 🌐 Internet Outage!',
@@ -2052,7 +2361,8 @@
                         effects: {stress: +10, mood: 'Neutral', internetDown: true},
                         message: 'Internet is out, but you\'ll adapt. Time to find some offline tasks.'
                     }
-                ]
+                ],
+                requiresWork: false // Can happen anytime
             },
             {
                 title: 'Emergency Meeting! 🐾 Pet Chaos!',
@@ -2069,7 +2379,26 @@
                         effects: {stress: +15, money: -30, petHappiness: +5, mood: 'Neutral'},
                         message: 'You sighed, cleaned up the mess, and gave your pet a hug. Still costs money though.'
                     }
-                ]
+                ],
+                requiresWork: false // Can happen anytime
+            },
+            // NEW: Scam Call Event
+            {
+                title: 'Emergency Meeting! 📞 Scam Call!',
+                description: 'Your phone rings, it\'s an unknown number with a London, ON area code. It could be a scam or important!',
+                choices: [
+                    {
+                        text: '📞 Pick Up (Risk it)',
+                        effects: {money: -10, stress: +15, mood: 'Stressed'},
+                        message: 'It was a scam call! You lost $10 and felt annoyed. 😠'
+                    },
+                    {
+                        text: '🔕 Let it go to voicemail',
+                        effects: {stress: -5, mood: 'Neutral'},
+                        message: 'You let it go. Better safe than sorry. 😌'
+                    }
+                ],
+                requiresWork: false // Can happen anytime
             }
         ];
 
@@ -2077,8 +2406,9 @@
         const londonBusDilemma = {
             title: 'Emergency Meeting! 🚌 Missed the Bus!',
             description: 'You just dropped off the kids at daycare, but you missed your bus by *that* much! The next one is in 20 minutes...',
+            requiresWork: true, // This event only happens if you are going to work/class
             choices: {
-                'retail': [
+                'shop-assistant': [
                     {
                         text: 'Wait for the next bus (and be late for work)',
                         effects: {time: 0.5, stress: +20, mood: 'Stressed', futureShiftPenalty: true}, // 0.5 hr = 30 mins
@@ -2102,16 +2432,16 @@
                         message: 'You hailed a cab. Your wallet is lighter, but your attendance record is safe.'
                     }
                 ],
-                'construction-worker': [
+                'nurse': [ // Updated for Nurse
                     {
-                        text: 'Wait for the next bus (and be late for site)',
-                        effects: {time: 0.5, stress: +20, mood: 'Stressed', futureShiftPenalty: true},
-                        message: 'You waited for the next bus. The foreman won\'t be happy about the delay. Might affect your next project assignment.'
+                        text: 'Wait for the next bus (and be late for shift)',
+                        effects: {time: 0.5, stress: +25, mood: 'Stressed', futureShiftPenalty: true},
+                        message: 'You waited for the next bus. Being late for a nursing shift is serious. Expect a stern talking-to and potentially less favorable shifts.'
                     },
                     {
                         text: 'Call a cab (expensive, but on time!)',
                         effects: {money: -25, stress: -5, mood: 'Neutral'},
-                        message: 'You took a cab to the site. Costly, but you avoided a lecture.'
+                        message: 'You took a cab to the hospital. Costly, but you arrived on time and avoided issues.'
                     }
                 ]
             }
@@ -2137,7 +2467,8 @@
                     effects: {energy: -15, stress: +20, kidHappiness: +5, mood: 'Stressed'},
                     message: 'You left without groceries. Sometimes retreat is the best strategy.'
                 }
-            ]
+            ],
+            requiresWork: false // Not work-related
         };
 
 
@@ -2157,7 +2488,7 @@
 
         function showHowToPlay() {
             const instructions = `
-🎯 GOAL: Balance work, family, and personal well-being in today's challenging economy in London, ON!
+🎯 GOAL: Balance work, family, and personal well-being in today's challenging economy!
 
 📊 MANAGE YOUR RESOURCES:
 • Energy: Complete tasks and rest when needed
@@ -2185,83 +2516,233 @@
 Remember: There's no perfect way to balance everything. Do your best and be kind to yourself! 💙
             `;
 
-            showModal('How to Play', instructions, [{text: 'Got It!', action: () => hideModal()}]);
+            // Use the generic showModal function with 'random-event-modal' ID for instructions
+            showModal('How to Play', instructions, [{text: 'Got It!', action: () => hideModal('random-event-modal')}]);
         }
 
-        // ===============================================
-        // CHARACTER CREATION & GAME INITIALIZATION
-        // ===============================================
-        function handleJobChange() {
-            const jobSelect = document.getElementById('job');
-            const numKidsSelect = document.getElementById('num-kids');
-            if (jobSelect.value === 'youtuber') {
-                numKidsSelect.value = '0';
-                numKidsSelect.disabled = true;
+        // NEW: Character selection logic
+        function selectJob(jobType) {
+            selectedJob = jobType;
+            document.querySelectorAll('#job-selection-grid .character-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            document.querySelector(`.character-card[data-job="${jobType}"]`).classList.add('selected');
+
+            // Disable kids selection if YouTuber is chosen
+            const kidsGroup = document.getElementById('num-kids-group');
+            if (jobType === 'youtuber') {
+                kidsGroup.style.opacity = '0.5';
+                kidsGroup.style.pointerEvents = 'none';
+                selectedKids = 0; // Force 0 kids for YouTuber
+                document.querySelectorAll('#kids-selection-grid .character-card').forEach(card => {
+                    card.classList.remove('selected');
+                });
+                document.querySelector(`.character-card[data-kids="0"]`).classList.add('selected');
             } else {
-                numKidsSelect.disabled = false;
+                kidsGroup.style.opacity = '1';
+                kidsGroup.style.pointerEvents = 'auto';
             }
         }
 
-        function startGame() {
+        function selectKids(num) {
+            selectedKids = num;
+            document.querySelectorAll('#kids-selection-grid .character-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            document.querySelector(`.character-card[data-kids="${num}"]`).classList.add('selected');
+        }
+
+        function selectPet(petType) {
+            selectedPet = petType;
+            document.querySelectorAll('#pet-selection-grid .character-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            document.querySelector(`.character-card[data-pet="${petType}"]`).classList.add('selected');
+        }
+
+
+        // ===============================================
+        // GAME INITIALIZATION & PLAYABILITY CHECK
+        // ===============================================
+
+        // Called once on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            checkPlayabilityAndLoadGame();
+        });
+
+        function checkPlayabilityAndLoadGame() {
+            const lastGameEnd = localStorage.getItem('lastGameEnd');
+            const savedState = loadGameState();
+            const now = new Date().getTime();
+
+            if (lastGameEnd) {
+                const timeElapsed = now - parseInt(lastGameEnd);
+                const cooldownMillis = COOLDOWN_HOURS * 60 * 60 * 1000;
+
+                if (timeElapsed < cooldownMillis) {
+                    // Cooldown is active, show countdown
+                    startCooldownCountdown(cooldownMillis - timeElapsed);
+                    return; // Stop further initialization
+                } else {
+                    // Cooldown has passed
+                    if (savedState) {
+                        // Offer to resume game
+                        showModal(
+                            'Welcome Back!',
+                            `Welcome back, ${savedState.playerName}! Do you want to resume your chaotic story from Day ${savedState.day}?`,
+                            [
+                                { text: 'Resume Game', action: () => resumeGame(savedState) },
+                                { text: 'Start New Game', action: () => { clearGameState(); showCharacterCreationScreen(); } } // Call new function
+                            ],
+                            'playability-modal'
+                        );
+                        return; // Wait for user choice
+                    }
+                }
+            }
+
+            // Default: No cooldown, no save, show the start screen
+            showScreen('start-screen');
+            // Ensure initial selections are made or highlighted for new game
+            selectJob(selectedJob || 'shop-assistant');
+            selectKids(selectedKids !== null ? selectedKids : 0);
+            selectPet(selectedPet || 'none');
+        }
+
+        // NEW: Function to show character creation screen
+        function showCharacterCreationScreen() {
+            showScreen('character-creation-screen');
+            // Ensure initial selections are made or highlighted
+            selectJob(selectedJob || 'shop-assistant');
+            selectKids(selectedKids !== null ? selectedKids : 0);
+            selectPet(selectedPet || 'none');
+        }
+
+        function startCooldownCountdown(initialTimeLeft) {
+            const modal = document.getElementById('playability-modal');
+            const titleElement = modal.querySelector('.modal-title');
+            const messageElement = modal.querySelector('.modal-text');
+            const okButton = modal.querySelector('.btn');
+
+            titleElement.textContent = 'Game Cooldown Active';
+            okButton.textContent = 'Okay';
+            okButton.onclick = () => hideModal('playability-modal'); // Allow closing, but countdown continues
+
+            modal.classList.add('active'); // Show modal
+
+            // Clear any existing interval to prevent multiple countdowns
+            if (cooldownIntervalId) {
+                clearInterval(cooldownIntervalId);
+            }
+
+            let timeLeft = initialTimeLeft;
+
+            const updateCountdown = () => {
+                if (timeLeft <= 0) {
+                    clearInterval(cooldownIntervalId);
+                    cooldownIntervalId = null; // Clear the ID
+                    hideModal('playability-modal');
+                    // Cooldown finished, now check for saved game or go to character creation
+                    const savedState = loadGameState();
+                    if (savedState) {
+                        showModal(
+                            'Welcome Back!',
+                            `Welcome back, ${savedState.playerName}! Do you want to resume your chaotic story from Day ${savedState.day}?`,
+                            [
+                                { text: 'Resume Game', action: () => resumeGame(savedState) },
+                                { text: 'Start New Game', action: () => { clearGameState(); showCharacterCreationScreen(); } }
+                            ],
+                            'playability-modal'
+                        );
+                    } else {
+                        showScreen('start-screen');
+                        selectJob(selectedJob || 'shop-assistant');
+                        selectKids(selectedKids !== null ? selectedKids : 0);
+                        selectPet(selectedPet || 'none');
+                    }
+                    return;
+                }
+
+                const hoursLeft = Math.floor(timeLeft / (1000 * 60 * 60));
+                const minutesLeft = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                const secondsLeft = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+                messageElement.textContent = `You've played too recently! Please wait ${hoursLeft}h ${minutesLeft}m ${secondsLeft}s before starting a new game.`;
+
+                timeLeft -= 1000; // Decrement by 1 second
+            };
+
+            updateCountdown(); // Call immediately to show initial time
+            cooldownIntervalId = setInterval(updateCountdown, 1000);
+        }
+
+
+        function startNewGame() {
             const playerName = document.getElementById('player-name').value.trim() || 'Player';
-            const numKids = parseInt(document.getElementById('num-kids').value);
-            const job = document.getElementById('job').value;
-            const petType = document.getElementById('pet-type').value; // NEW: Get pet type
 
-            // Update game state
-            gameState.playerName = playerName;
-            gameState.numKids = numKids;
-            gameState.job = job;
-            gameState.petType = petType; // NEW: Set pet type
-            gameState.day = 1; // Reset day for new game
-            gameState.time = 7; // Reset time
-            gameState.energy = 100;
-            gameState.money = 500;
-            gameState.stress = 0;
-            gameState.socialLife = 70; // Reset social life
-            gameState.mood = 'Neutral'; // Reset mood
-            gameState.milestoneAchieved = false; // Reset milestone flag
-            gameState.completedTasks = [];
-            gameState.tasksCompletedToday = 0;
-            gameState.procrastinatusActive = false;
-            gameState.activeWhims = [];
-            gameState.billsDue = [
-                { id: 'rent', name: 'Rent', amount: 500, dueDate: 5, paid: false },
-                { id: 'utilities', name: 'Utilities', amount: 80, dueDate: 7, paid: false },
-                { id: 'internet', name: 'Internet Bill', amount: 60, dueDate: 3, paid: false }
-            ];
-            gameState.missedDeadlines = [];
-            gameState.internetDown = false; // NEW: Reset internet status
-            gameState.nextDayShiftPenalty = false; // Reset penalty flag
-            gameState.nextDayLectureConsequence = null; // Reset lecture consequence
+            // Validate selections
+            if (!selectedJob || selectedKids === null || selectedPet === null) {
+                showModal('Selection Required', 'Please choose a job, number of kids, and a pet type to start the game.', [{text: 'Okay', action: () => hideModal('random-event-modal')}]);
+                return;
+            }
 
+            // Reset game state for a NEW game
+            gameState = {
+                playerName: playerName,
+                numKids: selectedKids,
+                job: selectedJob,
+                petType: selectedPet,
+                day: 1,
+                time: 7,
+                energy: 100,
+                money: 500,
+                stress: 0,
+                socialLife: 70,
+                petHappiness: 100,
+                mood: 'Neutral',
+                milestoneAchieved: false,
+                completedTasks: [],
+                tasksCompletedToday: 0,
+                procrastinatusActive: false,
+                activeWhims: [],
+                billsDue: [
+                    { id: 'rent', name: 'Rent', amount: 500, dueDate: 5, paid: false },
+                    { id: 'utilities', name: 'Utilities', amount: 80, dueDate: 7, paid: false },
+                    { id: 'internet', name: 'Internet Bill', amount: 60, dueDate: 3, paid: false }
+                ],
+                missedDeadlines: [],
+                internetDown: false,
+                nextDayShiftPenalty: false,
+                nextDayLectureConsequence: null,
+                isWorkingToday: false, // NEW: Initialize as false
+                isOffDay: false // NEW: Initialize as false
+            };
 
             // Initialize dynamic resource based on job
-            if (job === 'youtuber') {
-                gameState.subscribers = 30; // Starting subscribers
-                delete gameState.kidHappiness; // Remove if not needed
+            if (gameState.job === 'youtuber') {
+                gameState.subscribers = 30;
+                delete gameState.kidHappiness;
             } else {
-                gameState.kidHappiness = 80; // Default for other jobs
-                delete gameState.subscribers; // Remove if not needed
+                gameState.kidHappiness = 80;
+                delete gameState.subscribers;
             }
 
-            // Initialize pet happiness if a pet is chosen
-            if (petType !== 'none') {
+            if (gameState.petType !== 'none') {
                 gameState.petHappiness = 100;
             } else {
-                delete gameState.petHappiness; // Remove if no pet
+                delete gameState.petHappiness;
             }
 
             // Adjust starting resources based on family size (if applicable for current job)
-            if (job !== 'youtuber' && numKids > 0) { // Only affects non-YouTuber with kids
-                if (numKids === 1) {
+            if (gameState.job !== 'youtuber' && gameState.numKids > 0) {
+                if (gameState.numKids === 1) {
                     gameState.energy = 90;
                     gameState.stress = 10;
                     gameState.kidHappiness = 85;
-                } else if (numKids === 2) {
-                    gameState.energy = 80; // More kids = less energy
-                    gameState.stress = 20; // More kids = more stress
-                    gameState.kidHappiness = 70; // Harder to keep happy
+                } else if (gameState.numKids === 2) {
+                    gameState.energy = 80;
+                    gameState.stress = 20;
+                    gameState.kidHappiness = 70;
                 }
             }
 
@@ -2270,6 +2751,49 @@ Remember: There's no perfect way to balance everything. Do your best and be kind
             populateTasks(); // Populate tasks for the new day
             displayDailyDilemma(); // Display the first daily dilemma
             generateWhims(); // Generate initial whims
+            saveGameState(); // Save initial game state for new game
+        }
+
+        function resumeGame(savedState) {
+            gameState = savedState; // Restore game state
+            updateUI(); // Update UI with restored state
+            populateTasks(); // Repopulate tasks based on restored state
+            displayDailyDilemma(); // Display dilemma for current day
+            generateWhims(); // Generate whims
+            showScreen('daily-dashboard'); // Go to dashboard
+            hideModal('playability-modal'); // Hide the welcome back modal
+            showFeedback(`Welcome back, ${gameState.playerName}! Resuming your story on Day ${gameState.day}.`);
+        }
+
+        function saveGameState() {
+            try {
+                localStorage.setItem('myChaoticStorySave', JSON.stringify(gameState));
+                console.log('Game state saved.');
+            } catch (e) {
+                console.error('Error saving game state:', e);
+                showFeedback('Error saving game progress. Please check browser storage settings.');
+            }
+        }
+
+        function loadGameState() {
+            try {
+                const savedState = localStorage.getItem('myChaoticStorySave');
+                if (savedState) {
+                    return JSON.parse(savedState);
+                }
+            } catch (e) {
+                console.error('Error loading game state:', e);
+                // If parsing fails, clear the corrupted save
+                localStorage.removeItem('myChaoticStorySave');
+                showFeedback('Corrupted save file detected and cleared. Starting new game.');
+            }
+            return null;
+        }
+
+        function clearGameState() {
+            localStorage.removeItem('myChaoticStorySave');
+            localStorage.removeItem('lastGameEnd'); // Clear cooldown too if starting fresh
+            console.log('Game state cleared.');
         }
 
         // ===============================================
@@ -2300,8 +2824,9 @@ Remember: There's no perfect way to balance everything. Do your best and be kind
 
 
             // Update Energy, Money, Stress
-            document.getElementById('energy-value').textContent = `${Math.max(0, gameState.energy)}%`;
-            document.getElementById('energy-bar').style.width = `${Math.max(0, gameState.energy)}%`;
+            // Round energy, stress, subscribers to whole numbers
+            document.getElementById('energy-value').textContent = `${Math.round(Math.max(0, gameState.energy))}%`;
+            document.getElementById('energy-bar').style.width = `${Math.round(Math.max(0, gameState.energy))}%`;
             // NEW: Low energy visual indicator
             const energyResourceContainer = document.getElementById('energy-resource-container');
             if (energyResourceContainer) {
@@ -2315,8 +2840,8 @@ Remember: There's no perfect way to balance everything. Do your best and be kind
 
             document.getElementById('money-value').textContent = `$${Math.max(0, gameState.money)}`;
 
-            document.getElementById('stress-value').textContent = `${Math.max(0, gameState.stress)}%`;
-            document.getElementById('stress-bar').style.width = `${Math.max(0, gameState.stress)}%`;
+            document.getElementById('stress-value').textContent = `${Math.round(Math.max(0, gameState.stress))}%`;
+            document.getElementById('stress-bar').style.width = `${Math.round(Math.max(0, gameState.stress))}%`;
 
             // Update Dynamic Resource (Kid Happiness or Subscribers)
             const dynamicResourceIcon = document.getElementById('dynamic-resource-icon');
@@ -2328,8 +2853,8 @@ Remember: There's no perfect way to balance everything. Do your best and be kind
             if (gameState.job === 'youtuber') {
                 dynamicResourceIcon.textContent = '▶️'; // YouTube Play Button
                 dynamicResourceLabel.textContent = 'Subscribers';
-                dynamicResourceValue.textContent = `${Math.max(0, gameState.subscribers)}`;
-                dynamicResourceBar.style.width = `${Math.min(100, gameState.subscribers / 20)}%`; // Scale for bar (e.g., 2000 subs = 100%)
+                dynamicResourceValue.textContent = `${Math.round(Math.max(0, gameState.subscribers))}`;
+                dynamicResourceBar.style.width = `${Math.min(100, Math.round(gameState.subscribers / 20))}%`; // Scale for bar (e.g., 2000 subs = 100%)
                 dynamicResourceBar.className = 'resource-bar-fill subscribers-bar'; // Apply new bar color
                 dynamicResourceContainer.style.display = 'block'; // Ensure it's visible
 
@@ -2339,15 +2864,15 @@ Remember: There's no perfect way to balance everything. Do your best and be kind
                     showModal(
                         '🎉 Congratulations! 🎉',
                         'You\'ve hit 1,000 subscribers! Your channel is officially monetized and growing! Keep up the great content!',
-                        [{text: 'Awesome!', action: () => hideModal()}]
+                        [{text: 'Awesome!', action: () => hideModal('random-event-modal')}]
                     );
                 }
 
             } else if (gameState.numKids > 0) {
                 dynamicResourceIcon.textContent = '😊';
                 dynamicResourceLabel.textContent = 'Kid Happiness';
-                dynamicResourceValue.textContent = `${Math.max(0, gameState.kidHappiness)}%`;
-                dynamicResourceBar.style.width = `${Math.max(0, gameState.kidHappiness)}%`;
+                dynamicResourceValue.textContent = `${Math.round(Math.max(0, gameState.kidHappiness))}%`;
+                dynamicResourceBar.style.width = `${Math.round(Math.max(0, gameState.kidHappiness))}%`;
                 dynamicResourceBar.className = 'resource-bar-fill happiness-bar'; // Apply happiness bar color
                 dynamicResourceContainer.style.display = 'block'; // Ensure it's visible
             } else {
@@ -2355,8 +2880,8 @@ Remember: There's no perfect way to balance everything. Do your best and be kind
             }
 
             // Update Social Life
-            document.getElementById('social-value').textContent = `${Math.max(0, gameState.socialLife)}%`;
-            document.getElementById('social-bar').style.width = `${Math.max(0, gameState.socialLife)}%`;
+            document.getElementById('social-value').textContent = `${Math.round(Math.max(0, gameState.socialLife))}%`;
+            document.getElementById('social-bar').style.width = `${Math.round(Math.max(0, gameState.socialLife))}%`;
 
             // NEW: Update Pet Happiness
             const petResourceContainer = document.getElementById('pet-resource');
@@ -2367,8 +2892,8 @@ Remember: There's no perfect way to balance everything. Do your best and be kind
             if (gameState.petType !== 'none') {
                 petResourceContainer.style.display = 'block';
                 petIcon.textContent = gameState.petType === 'dog' ? '🐶' : '🐱';
-                petHappinessValue.textContent = `${Math.max(0, gameState.petHappiness)}%`;
-                petHappinessBar.style.width = `${Math.max(0, gameState.petHappiness)}%`;
+                petHappinessValue.textContent = `${Math.round(Math.max(0, gameState.petHappiness))}%`;
+                petHappinessBar.style.width = `${Math.round(Math.max(0, gameState.petHappiness))}%`;
             } else {
                 petResourceContainer.style.display = 'none';
             }
@@ -2405,8 +2930,15 @@ Remember: There's no perfect way to balance everything. Do your best and be kind
 
             // Check if energy is 0 or less to end the day
             if (gameState.energy <= 0 && document.getElementById('daily-dashboard').classList.contains('active')) {
-                endDay();
+                // NEW: Show energy depleted modal instead of directly ending day
+                showModal('🔋 Energy Depleted!', 'You\'ve run out of energy for the day. Time to rest!', [{text: 'End Day', action: () => { hideModal('energy-depleted-modal'); endDay(); }}], 'energy-depleted-modal');
             }
+            // NEW: Check if stress is 100 or more to end the day
+            if (gameState.stress >= 100 && document.getElementById('daily-dashboard').classList.contains('active')) {
+                // The error was here: 'stress-depleted-modal' was not in the HTML
+                showModal('🤯 Burnout!', 'Your stress levels are too high! You\'ve reached burnout. Time to take a break!', [{text: 'End Day', action: () => { hideModal('stress-depleted-modal'); endDay(); }}], 'stress-depleted-modal');
+            }
+
 
             // Update End of Day Summary screen values
             const summaryDayNumberElement = document.getElementById('summary-day-number');
@@ -2428,8 +2960,19 @@ Remember: There's no perfect way to balance everything. Do your best and be kind
         }
 
         // ===============================================
-        // TASK MANAGEMENT
+        // TASK MANAGEMENT & DIFFICULTY
         // ===============================================
+
+        // NEW: Function to get difficulty multiplier based on day
+        function getDifficultyMultiplier() {
+            if (gameState.day === 1) return 1; // Day 1 is easy
+            if (gameState.day >= 7) return 2.0; // Day 7 and beyond is hardest
+            if (gameState.day >= 5) return 1.7; // Day 5 is very hard
+            if (gameState.day >= 3) return 1.4; // Day 3 is harder
+            return 1.1 + (gameState.day * 0.1); // Gradual increase for other days
+        }
+
+
         function populateTasks() {
             const todoList = document.getElementById('todo-list');
             if (!todoList) return;
@@ -2437,14 +2980,42 @@ Remember: There's no perfect way to balance everything. Do your best and be kind
             todoList.innerHTML = '';
             gameState.completedTasks = [];
             gameState.tasksCompletedToday = 0;
+            gameState.isWorkingToday = false; // Reset work status for the new day
 
-            // Get tasks relevant to the current job
-            const currentJobTasks = jobSpecificTasks[gameState.job] || [];
-            let availableTasks = [...currentJobTasks]; // Start with job-specific tasks
+            // NEW: Determine if it's an off-day (e.g., 20% chance for non-YouTubers)
+            gameState.isOffDay = (gameState.job !== 'youtuber' && Math.random() < 0.2); // 20% chance for an off day
 
-            // Add common tasks that apply to the current job
+            let availableTasks = [];
+
+            // If it's an off day, add the "Enjoy Your Day Off" task and no work tasks
+            if (gameState.isOffDay) {
+                availableTasks.push(offDayTask);
+                showFeedback(`It's your day off, ${gameState.playerName}! No work today. 🎉`);
+            } else {
+                // If not an off-day, get tasks relevant to the current job
+                const currentJobTasks = jobSpecificTasks[gameState.job] || [];
+                let workOrStudyTasks = currentJobTasks.filter(task => task.isWorkTask);
+                let nonWorkTasks = currentJobTasks.filter(task => !task.isWorkTask);
+
+                // Ensure at least one work/study task is available if it's a work day
+                if (workOrStudyTasks.length > 0) {
+                    const randomWorkTask = workOrStudyTasks[Math.floor(Math.random() * workOrStudyTasks.length)];
+                    availableTasks.push(randomWorkTask);
+                    // Add remaining non-work tasks
+                    availableTasks = availableTasks.concat(nonWorkTasks);
+                } else {
+                    // If somehow no work tasks are defined for the job, just add non-work tasks
+                    availableTasks = availableTasks.concat(nonWorkTasks);
+                }
+            }
+
+            // Add common tasks that apply to the current job, filtering out work-related if it's an off day
             commonTasks.forEach(task => {
-                if (task.appliesTo.includes(gameState.job)) {
+                if (task.appliesTo && task.appliesTo.includes(gameState.job)) {
+                    // Skip if it's a work-related task and it's an off day
+                    if (gameState.isOffDay && task.isWorkTask) {
+                        return;
+                    }
                     // Only add morning routine if not a YouTuber
                     if (task.id === 'morning-routine-common' && gameState.job === 'youtuber') {
                         return;
@@ -2452,7 +3023,7 @@ Remember: There's no perfect way to balance everything. Do your best and be kind
                     // Add pay rent if it's due
                     if (task.id === 'pay-rent') {
                         const rentBill = gameState.billsDue.find(bill => bill.id === 'rent');
-                        if (rentBill && !rentBill.paid && gameState.day % rentBill.dueDate === 0) { // Fix: Changed bill.dueDate to rentBill.dueDate
+                        if (rentBill && !rentBill.paid && gameState.day % rentBill.dueDate === 0) {
                             availableTasks.push(task);
                         }
                         return;
@@ -2460,7 +3031,7 @@ Remember: There's no perfect way to balance everything. Do your best and be kind
                     // Add utilities if due
                     if (task.id === 'pay-utilities') {
                         const utilitiesBill = gameState.billsDue.find(bill => bill.id === 'utilities');
-                        if (utilitiesBill && !utilitiesBill.paid && gameState.day % utilitiesBill.dueDate === 0) { // Fix: Changed bill.dueDate to utilitiesBill.dueDate
+                        if (utilitiesBill && !utilitiesBill.paid && gameState.day % utilitiesBill.dueDate === 0) {
                             availableTasks.push(task);
                         }
                         return;
@@ -2468,7 +3039,7 @@ Remember: There's no perfect way to balance everything. Do your best and be kind
                     // Add internet bill if due
                     if (task.id === 'pay-internet') {
                         const internetBill = gameState.billsDue.find(bill => bill.id === 'internet');
-                        if (internetBill && !internetBill.paid && gameState.day % internetBill.dueDate === 0) { // Fix: Changed bill.dueDate to internetBill.dueDate
+                        if (internetBill && !internetBill.paid && gameState.day % internetBill.dueDate === 0) {
                             availableTasks.push(task);
                         }
                         return;
@@ -2484,7 +3055,7 @@ Remember: There's no perfect way to balance everything. Do your best and be kind
             // NEW: Add pet tasks if applicable
             if (gameState.petType !== 'none') {
                 petTasks.forEach(task => {
-                    if (task.requiresPet) {
+                    if (task.requiresPet && task.appliesTo.includes(gameState.job)) { // Ensure pet tasks apply to current job
                         availableTasks.push(task);
                     }
                 });
@@ -2504,20 +3075,10 @@ Remember: There's no perfect way to balance everything. Do your best and be kind
                 return true;
             });
 
-            // Separate work/study tasks for dynamic selection and to determine if daycare is needed
-            let workOrStudyTasks = [];
-            if (gameState.job === 'international-student') {
-                workOrStudyTasks = availableTasks.filter(task => ['attend-lectures', 'part-time-shift-student', 'last-minute-shift', 'study-for-class'].includes(task.id));
-                // Remove these from availableTasks for now, to add them strategically later
-                availableTasks = availableTasks.filter(task => !['attend-lectures', 'part-time-shift-student', 'last-minute-shift', 'study-for-class'].includes(task.id));
-            } else if (gameState.job === 'retail' || gameState.job === 'construction-worker') {
-                workOrStudyTasks = availableTasks.filter(task => ['work-shift', 'part-time-work', 'morning-site-prep', 'heavy-lifting-shift', 'overtime-shift'].includes(task.id));
-                availableTasks = availableTasks.filter(task => !['work-shift', 'part-time-work', 'morning-site-prep', 'heavy-lifting-shift', 'overtime-shift'].includes(task.id));
-            }
-
             // Determine if daycare tasks should be added (if player has kids and there's work/study today)
             let addDaycareTasks = false;
-            if (gameState.numKids > 0 && gameState.job !== 'youtuber' && workOrStudyTasks.length > 0) {
+            // Daycare tasks only if not an off-day and player has kids
+            if (!gameState.isOffDay && gameState.numKids > 0 && gameState.job !== 'youtuber' && availableTasks.some(task => task.isWorkTask)) {
                 addDaycareTasks = true;
             }
 
@@ -2529,24 +3090,38 @@ Remember: There's no perfect way to balance everything. Do your best and be kind
                 }
             }
 
-            // Add one random work/study task back to the list if applicable
-            if (workOrStudyTasks.length > 0) {
-                const randomWorkTask = workOrStudyTasks[Math.floor(Math.random() * workOrStudyTasks.length)];
-                availableTasks.unshift(randomWorkTask); // Add to the beginning, after daycare if present
+            // Add generic filler tasks if needed to reach MIN_TASKS_PER_DAY
+            const allGenericTasks = [...genericFillerTasks];
+            while (availableTasks.length < MIN_TASKS_PER_DAY) {
+                const randomGenericTask = allGenericTasks[Math.floor(Math.random() * allGenericTasks.length)];
+                // Ensure we don't add duplicates of the same generic task if the pool is small
+                if (!availableTasks.some(task => task.id === randomGenericTask.id)) {
+                    availableTasks.push(randomGenericTask);
+                } else {
+                    // If all generic tasks are already added, break to prevent infinite loop
+                    if (availableTasks.length >= allGenericTasks.length + currentJobTasks.length + commonTasks.length + petTasks.length) {
+                        break;
+                    }
+                    // If we can't add a unique generic task, try another random one
+                    continue;
+                }
             }
 
 
             // Shuffle remaining tasks for variety
             availableTasks = availableTasks.sort(() => 0.5 - Math.random());
 
-            // Limit tasks shown per day (e.g., 5-7 tasks)
-            const tasksForToday = availableTasks.slice(0, Math.min(availableTasks.length, 7)); // Show max 7 tasks
+            // Limit tasks shown per day to exactly MIN_TASKS_PER_DAY
+            const tasksForToday = availableTasks.slice(0, MIN_TASKS_PER_DAY);
 
             // Add daycare pick-up if drop-off was added
             if (addDaycareTasks) {
                 const daycarePickupTask = jobSpecificTasks[gameState.job].find(t => t.id === 'daycare-pickup');
                 if (daycarePickupTask) {
-                    tasksForToday.push(daycarePickupTask); // Add to the end
+                    // Ensure it's not already in tasksForToday (e.g., if it was picked as a random task)
+                    if (!tasksForToday.some(task => task.id === daycarePickupTask.id)) {
+                        tasksForToday.push(daycarePickupTask); // Add to the end
+                    }
                 }
             }
 
@@ -2554,12 +3129,14 @@ Remember: There's no perfect way to balance everything. Do your best and be kind
             tasksForToday.forEach(task => {
                 const taskDiv = document.createElement('div');
                 taskDiv.className = 'todo-item';
-                if (task.id.includes('work') || task.id.includes('shift') || task.id.includes('monetize') || task.id.includes('construction') || task.id.includes('pay-rent')) taskDiv.classList.add('work-task');
+                if (task.id.includes('work') || task.id.includes('shift') || task.id.includes('monetize') || task.id.includes('nurse') || task.id.includes('pay-rent') || task.id.includes('attend-lectures') || task.id.includes('study-for-class') || task.id.includes('send-job-applications') || task.id.includes('check-ircc-updates') || task.id.includes('part-time-shift-student') || task.id.includes('last-minute-shift') || task.id.includes('morning-huddle') || task.id.includes('patient-rounds') || task.id.includes('emergency-response') || task.id.includes('charting-documentation') || task.id.includes('team-collaboration') || task.id.includes('patient-education') || task.id.includes('roblox-gameplay') || task.id.includes('edit-roblox-video') || task.id.includes('upload-roblox-video') || task.id.includes('live-stream-roblox') || task.id.includes('research-roblox-trends') || task.id.includes('collaborate-roblox-youtuber') || task.id.includes('monetize-content-youtuber')) taskDiv.classList.add('work-task'); // Updated for Nurse and YouTuber work tasks
                 else if (task.id.includes('feed') || task.id.includes('quality') || task.id.includes('routine') || task.id.includes('daycare')) taskDiv.classList.add('family-task'); // Added daycare here
-                else if (task.id.includes('nap') || task.id.includes('study') || task.id.includes('explore') || task.id.includes('call-home') || task.id.includes('attend-lectures') || task.id.includes('brainstorm') || task.id.includes('research')) taskDiv.classList.add('self-care-task');
-                else if (task.id.includes('grocery') || task.id.includes('house') || task.id.includes('tool') || task.id.includes('material') || task.id.includes('utilities') || task.id.includes('internet')) taskDiv.classList.add('chore-task');
-                else if (task.id.includes('film') || task.id.includes('edit') || task.id.includes('upload') || task.id.includes('engage') || task.id.includes('live-stream') || task.id.includes('collaborate') || task.id.includes('social-event') || task.id.includes('deal-with-haters')) taskDiv.classList.add('social-task'); // YouTuber/Student specific social/content tasks
-                else if (task.id.includes('pet')) taskDiv.classList.add('family-task'); // NEW: Pet tasks are family tasks
+                else if (task.id.includes('nap') || task.id.includes('study') || task.id.includes('explore') || task.id.includes('call-home') || task.id.includes('attend-lectures') || task.id.includes('brainstorm') || task.id.includes('research') || task.id.includes('walk') || task.id.includes('meditate') || task.id.includes('stretch') || task.id.includes('snack') || task.id.includes('journaling') || task.id.includes('yoga') || task.id.includes('creative')) taskDiv.classList.add('self-care-task'); // Added new self-care tasks
+                else if (task.id.includes('grocery') || task.id.includes('house') || task.id.includes('tool') || task.id.includes('material') || task.id.includes('utilities') || task.id.includes('internet') || task.id.includes('organize') || task.id.includes('plan')) taskDiv.classList.add('chore-task'); // Added new chore tasks
+                else if (task.id.includes('film') || task.id.includes('edit') || task.id.includes('upload') || task.id.includes('engage') || task.id.includes('live-stream') || task.id.includes('collaborate') || task.id.includes('social-event') || task.id.includes('deal-with-haters') || task.id.includes('call-friend') || task.id.includes('social-media') || task.id.includes('music') || task.id.includes('news') || task.id.includes('funny') || task.id.includes('dance')) taskDiv.classList.add('social-task'); // YouTuber/Student specific social/content tasks, and new social tasks
+                else if (task.id.includes('pet')) taskDiv.classList.add('family-task'); // Pet tasks are family tasks
+                else if (task.id === 'day-off') taskDiv.classList.add('self-care-task'); // NEW: Off day task type
+
 
                 taskDiv.innerHTML = `
                     <div class="todo-text">${task.text}</div>
@@ -2637,7 +3214,7 @@ Remember: There's no perfect way to balance everything. Do your best and be kind
             let task;
 
             if (type === 'main') {
-                task = [...jobSpecificTasks[gameState.job], ...commonTasks, ...petTasks].find(t => t.id === taskId); // Include petTasks
+                task = [...jobSpecificTasks[gameState.job], ...commonTasks, ...petTasks, ...genericFillerTasks].find(t => t.id === taskId); // Include generic tasks
             } else if (type === 'whim') {
                 task = gameState.activeWhims.find(w => w.id === taskId);
             }
@@ -2646,7 +3223,9 @@ Remember: There's no perfect way to balance everything. Do your best and be kind
 
             showTaskAnimation(task);
 
-            // Apply effects, considering mood's influence
+            const difficultyMultiplier = getDifficultyMultiplier(); // Get current difficulty
+
+            // Apply base effects
             for (const key in task.effects) {
                 let effectValue = task.effects[key];
 
@@ -2687,6 +3266,13 @@ Remember: There's no perfect way to balance everything. Do your best and be kind
                     } else if (gameState.mood === 'Bored') {
                         effectValue = key === 'energy' ? effectValue * 0.9 : effectValue * 1.1; // Slightly less energy, more stress
                     }
+
+                    // NEW: Apply difficulty multiplier to energy and stress costs
+                    if (key === 'energy' && effectValue < 0) { // Only apply to negative energy effects (costs)
+                        effectValue *= difficultyMultiplier;
+                    } else if (key === 'stress' && effectValue > 0) { // Only apply to positive stress effects (gains)
+                        effectValue *= difficultyMultiplier;
+                    }
                 }
 
                 // Apply future shift penalty
@@ -2696,7 +3282,7 @@ Remember: There's no perfect way to balance everything. Do your best and be kind
 
                 // Apply job/class consequence for childcare cancellation
                 if (key === 'jobConsequence' && effectValue === true) {
-                    if (gameState.job === 'retail' || gameState.job === 'construction-worker') {
+                    if (gameState.job === 'shop-assistant' || gameState.job === 'nurse') { // Updated for Nurse
                         gameState.money -= 100; // Penalty for missing work
                         showFeedback('You missed a day of work due to childcare. -$100!');
                     } else if (gameState.job === 'international-student') {
@@ -2726,6 +3312,11 @@ Remember: There's no perfect way to balance everything. Do your best and be kind
             }
             gameState.time += task.time;
             gameState.tasksCompletedToday++;
+
+            // NEW: Set isWorkingToday flag if a work task is completed
+            if (task.isWorkTask) {
+                gameState.isWorkingToday = true;
+            }
 
             // Handle specific task consequences
             if (taskId === 'pay-rent') {
@@ -2764,10 +3355,14 @@ Remember: There's no perfect way to balance everything. Do your best and be kind
 
             // Random event trigger (excluding whims and specific triggers)
             // Also exclude if internet is down and it's an internet outage event
+            // NEW: Only trigger random event if it's not an off day OR if the event doesn't require work
             if (type === 'main' && !task.triggerBusEvent && !task.triggerTantrum && !gameState.procrastinatusActive && Math.random() < 0.2) {
-                const potentialEvent = randomEvents[Math.floor(Math.random() * randomEvents.length)];
-                if (potentialEvent.title !== 'Emergency Meeting! 🌐 Internet Outage!' || !gameState.internetDown) { // Prevent double-triggering internet outage
-                    triggerRandomEvent();
+                const potentialEvent = randomEvents.filter(event => event.title !== 'Emergency Meeting! 🌐 Internet Outage!')[Math.floor(Math.random() * randomEvents.length)];
+                if (potentialEvent && (potentialEvent.title !== 'Emergency Meeting! 🌐 Internet Outage!' || !gameState.internetDown)) { // Prevent double-triggering internet outage
+                    // NEW: Check if event requires work and if it's an off day
+                    if (!potentialEvent.requiresWork || gameState.isWorkingToday) {
+                         triggerRandomEvent();
+                    }
                 }
             }
             // NEW: Trigger pet chaos if pet happiness is very low
@@ -2787,7 +3382,7 @@ Remember: There's no perfect way to balance everything. Do your best and be kind
             }
 
             const allTasksCompleted = Array.from(document.querySelectorAll('.todo-item:not(.completed)')).length === 0;
-            if (allTasksCompleted || gameState.time >= 22 || gameState.energy <= 0) { // End day if energy hits 0
+            if (allTasksCompleted || gameState.time >= 22 || gameState.energy <= 0 || gameState.stress >= 100) { // End day if energy or stress hits 0/100
                 endDay();
             }
         }
@@ -2892,34 +3487,40 @@ Remember: There's no perfect way to balance everything. Do your best and be kind
         // ===============================================
         // RANDOM EVENT / EMERGENCY MEETING
         // ===============================================
-        function showModal(title, description, choices) {
-            const modal = document.getElementById('random-event-modal');
-            const eventTitle = document.getElementById('event-title');
-            const eventDescription = document.getElementById('event-description');
-            const eventChoices = document.getElementById('event-choices');
+        function showModal(title, description, choices, modalId = 'random-event-modal') { // NEW: Added modalId parameter
+            const modal = document.getElementById(modalId);
+            // Added null checks for elements inside the modal content
+            const eventTitle = modal ? modal.querySelector('.modal-title') : null;
+            const eventDescription = modal ? modal.querySelector('.modal-text') : null;
+            const eventChoices = modal ? modal.querySelector('.modal-choices') : null; // This might be null for playability-modal
 
-            if (!modal || !eventTitle || !eventDescription || !eventChoices) return;
+            if (!modal || !eventTitle || !eventDescription) {
+                console.error(`Error: Modal element with ID '${modalId}' or its essential children not found.`);
+                return; // Stop execution if essential elements are missing
+            }
 
             eventTitle.textContent = title;
             eventDescription.textContent = description;
-            eventChoices.innerHTML = '';
 
-            choices.forEach(choice => {
-                const choiceBtn = document.createElement('button');
-                choiceBtn.className = 'btn choice-btn';
-                choiceBtn.textContent = choice.text;
-                choiceBtn.onclick = () => {
-                    if (choice.action) choice.action();
-                    else handleEventChoice(choice);
-                    hideModal();
-                };
-                eventChoices.appendChild(choiceBtn);
-            });
+            if (eventChoices) { // Only clear and populate if choices exist (e.g., not for playability modal)
+                eventChoices.innerHTML = '';
+                choices.forEach(choice => {
+                    const choiceBtn = document.createElement('button');
+                    choiceBtn.className = 'btn choice-btn';
+                    choiceBtn.textContent = choice.text;
+                    choiceBtn.onclick = () => {
+                        if (choice.action) choice.action();
+                        else handleEventChoice(choice);
+                        hideModal(modalId); // Pass the modalId to hide the correct modal
+                    };
+                    eventChoices.appendChild(choiceBtn);
+                });
+            }
             modal.classList.add('active');
         }
 
-        function hideModal() {
-            const modal = document.getElementById('random-event-modal');
+        function hideModal(modalId = 'random-event-modal') { // NEW: Added modalId parameter
+            const modal = document.getElementById(modalId);
             if (modal) {
                 modal.classList.remove('active');
             }
@@ -2931,6 +3532,9 @@ Remember: There's no perfect way to balance everything. Do your best and be kind
                 const jobMatch = !event.job || event.job.includes(gameState.job); // Check if event.job array includes current job
                 const kidsMatch = (event.hasKids === undefined) || (event.hasKids === (gameState.numKids > 0));
                 const petMatch = (event.requiresPet === undefined) || (event.requiresPet === (gameState.petType !== 'none'));
+                // NEW: Filter by isWorkingToday flag
+                const workStatusMatch = (event.requiresWork === undefined) || (event.requiresWork === gameState.isWorkingToday);
+
 
                 // Prevent Internet Outage event if internet is already down
                 if (event.title === 'Emergency Meeting! 🌐 Internet Outage!' && gameState.internetDown) {
@@ -2940,8 +3544,13 @@ Remember: There's no perfect way to balance everything. Do your best and be kind
                 if (event.title === 'Emergency Meeting! 🐾 Pet Chaos!' && (gameState.petType === 'none' || gameState.petHappiness >= 20)) {
                     return false;
                 }
+                // Prevent Scam Call if already stressed or low on money to avoid immediate game over
+                if (event.title === 'Emergency Meeting! 📞 Scam Call!' && (gameState.stress > 80 || gameState.money < 50)) {
+                    return false;
+                }
 
-                return jobMatch && kidsMatch && petMatch;
+
+                return jobMatch && kidsMatch && petMatch && workStatusMatch; // NEW: Include work status match
             });
 
             if (applicableEvents.length === 0) {
@@ -2970,7 +3579,7 @@ Remember: There's no perfect way to balance everything. Do your best and be kind
                 }
                 // Apply job/class consequence for childcare cancellation
                 if (key === 'jobConsequence' && effectValue === true) {
-                    if (gameState.job === 'retail' || gameState.job === 'construction-worker') {
+                    if (gameState.job === 'shop-assistant' || gameState.job === 'nurse') { // Updated for Nurse
                         gameState.money -= 100; // Penalty for missing work
                         showFeedback('You missed a day of work due to childcare. -$100!');
                     } else if (gameState.job === 'international-student') {
@@ -2979,6 +3588,7 @@ Remember: There's no perfect way to balance everything. Do your best and be kind
                         showFeedback('You missed class due to childcare. Academic stress increased!');
                     }
                 }
+
                 // NEW: Handle internet outage flag
                 if (key === 'internetDown' && effectValue === true) {
                     gameState.internetDown = true;
@@ -3003,6 +3613,12 @@ Remember: There's no perfect way to balance everything. Do your best and be kind
 
         // NEW: Function to trigger the London Bus Dilemma
         function triggerLondonBusDilemma() {
+            // NEW: Only trigger if it's a work day
+            if (!gameState.isWorkingToday) {
+                console.log("Skipping bus dilemma: Not a work day.");
+                return;
+            }
+
             const jobChoices = londonBusDilemma.choices[gameState.job];
             if (!jobChoices) {
                 console.warn("No bus dilemma choices for current job:", gameState.job);
@@ -3062,7 +3678,10 @@ Remember: There's no perfect way to balance everything. Do your best and be kind
             const applicableDilemmas = dailyDilemmas.filter(dilemma => {
                 const jobMatch = !dilemma.job || dilemma.job.includes(gameState.job);
                 const kidsMatch = (dilemma.hasKids === undefined) || (dilemma.hasKids === (gameState.numKids > 0));
-                return jobMatch && kidsMatch;
+                // NEW: Filter by isWorkingToday flag
+                const workStatusMatch = (dilemma.requiresWork === undefined) || (dilemma.requiresWork === gameState.isWorkingToday);
+
+                return jobMatch && kidsMatch && workStatusMatch; // NEW: Include work status match
             });
 
             if (applicableDilemmas.length === 0) {
@@ -3185,11 +3804,23 @@ Remember: There's no perfect way to balance everything. Do your best and be kind
                 endOfDayMessages.push(`🐾 Your pet is very unhappy! Stress increased. Make sure to feed and play with them.`);
             }
 
+            // NEW: Penalty for not working on a work day
+            if (!gameState.isOffDay && !gameState.isWorkingToday && gameState.job !== 'youtuber') { // YouTubers don't have a strict "work" task always
+                const missedWorkPenalty = 40; // Example stress penalty for missing work
+                gameState.stress += missedWorkPenalty;
+                gameState.money -= 50; // Financial penalty
+                endOfDayMessages.push(`🚫 You didn't complete any work tasks today! Stress +${missedWorkPenalty}, Money -$50. This will affect your career!`);
+            }
+
 
             // Default message if no specific events
             if (endOfDayMessages.length === 0) {
                 endOfDayMessages.push('You made it through another day! 🌟');
             }
+
+            // NEW: Record game end timestamp for cooldown
+            localStorage.setItem('lastGameEnd', new Date().getTime().toString());
+            saveGameState(); // Save game state at end of day
 
 
             updateEndOfDayReport(endOfDayMessages.join('<br><br>')); // Pass all messages to report
@@ -3240,6 +3871,8 @@ Remember: There's no perfect way to balance everything. Do your best and be kind
             gameState.activeWhims = []; // Clear whims for the new day
             gameState.missedDeadlines = []; // Clear missed deadlines for the new day
             gameState.internetDown = false; // NEW: Internet is back on for the new day
+            gameState.isWorkingToday = false; // NEW: Reset work status for the new day
+            gameState.isOffDay = false; // NEW: Reset off day status for the new day
 
 
             // Reset paid status for recurring bills for the new cycle (e.g., monthly)
@@ -3255,10 +3888,11 @@ Remember: There's no perfect way to balance everything. Do your best and be kind
             generateWhims(); // Generate new whims for the day
             showScreen('daily-dashboard');
             updateUI();
+            saveGameState(); // Save game state after advancing to next day
         }
 
         // ===============================================
-        // LIFE'S LEDGER DAILY REPORT
+        // MY CHAOTIC STORY DAILY REPORT
         // ===============================================
         function updateEndOfDayReport(summaryMessage) { // Accept summary message
             const reportGrid = document.getElementById('daily-report-grid');
@@ -3281,7 +3915,7 @@ Remember: There's no perfect way to balance everything. Do your best and be kind
                     {id: 'content', label: 'Content Creation', icon: '🎥', value: gameState.tasksCompletedToday, thresholdGood: 3, thresholdOkay: 1}, // Based on tasks done
                     {id: 'subscribers', label: 'Subscribers', icon: '📈', value: gameState.subscribers, thresholdGood: 1000, thresholdOkay: 500} // Thresholds for 1000 and 500 subs
                 );
-            } else if (gameState.numKids > 0) { // For retail, international student, construction with kids
+            } else if (gameState.numKids > 0) { // For shop-assistant, international student, nurse with kids
                 categories.push(
                     {id: 'family', label: 'Family/Kids', icon: '👨‍👩‍👧‍👦', value: gameState.kidHappiness, thresholdGood: 70, thresholdOkay: 40}
                 );
@@ -3298,12 +3932,12 @@ Remember: There's no perfect way to balance everything. Do your best and be kind
                     {id: 'academics', label: 'Academics', icon: '🎓', value: gameState.energy - gameState.stress, thresholdGood: 30, thresholdOkay: 0},
                     {id: 'integration', label: 'London Life', icon: '🇨🇦', value: gameState.tasksCompletedToday, thresholdGood: 2, thresholdOkay: 0}
                 );
-            } else if (gameState.job === 'construction-worker') {
+            } else if (gameState.job === 'nurse') { // Updated for Nurse
                 categories.push(
                     {id: 'physical', label: 'Physical Health', icon: '💪', value: gameState.energy, thresholdGood: 60, thresholdOkay: 30},
-                    {id: 'productivity', label: 'Productivity', icon: '🏗️', value: gameState.tasksCompletedToday, thresholdGood: 3, thresholdOkay: 1}
+                    {id: 'productivity', label: 'Productivity', icon: '🏥', value: gameState.tasksCompletedToday, thresholdGood: 3, thresholdOkay: 1}
                 );
-            } else if (gameState.job === 'retail') {
+            } else if (gameState.job === 'shop-assistant') {
                 categories.push(
                     {id: 'work-perf', label: 'Work Performance', icon: '📊', value: gameState.tasksCompletedToday, thresholdGood: 3, thresholdOkay: 1}
                 );
@@ -3329,13 +3963,13 @@ Remember: There's no perfect way to balance everything. Do your best and be kind
                     // Subscriber specific thresholds
                     if (cat.value >= cat.thresholdGood) {
                         statusClass = 'status-balanced';
-                        statusText = `📈 Trending (${cat.value} subs)`;
+                        statusText = `📈 Trending (${Math.round(cat.value)} subs)`;
                     } else if (cat.value >= cat.thresholdOkay) {
                         statusClass = 'status-strained';
-                        statusText = `↔️ Stable (${cat.value} subs)`;
+                        statusText = `↔️ Stable (${Math.round(cat.value)} subs)`;
                     } else {
                         statusClass = 'status-critical';
-                        statusText = `📉 Losing Ground (${cat.value} subs)`;
+                        statusText = `📉 Losing Ground (${Math.round(cat.value)} subs)`;
                     }
                 } else if (cat.id === 'work-perf' || cat.id === 'content' || cat.id === 'productivity' || cat.id === 'integration' || cat.id === 'academics') {
                     if (cat.value >= cat.thresholdGood) {
@@ -3378,15 +4012,6 @@ Remember: There's no perfect way to balance everything. Do your best and be kind
                 daySummaryElement.innerHTML = summaryMessage; // Use innerHTML to render <br>
             }
         }
-
-
-        // Initial setup when the page loads
-        document.addEventListener('DOMContentLoaded', () => {
-            showScreen('start-screen');
-            // Attach event listener for job change
-            document.getElementById('job').addEventListener('change', handleJobChange);
-            // Initial UI update will happen when startGame is called
-        });
     </script>
 </body>
 
